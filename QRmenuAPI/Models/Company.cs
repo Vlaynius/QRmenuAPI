@@ -48,9 +48,9 @@ namespace QRmenuAPI.Models
         public DateTime RegisterDate { get; set; }
 
         [Required]
-        public byte StatusId { get; set; }
-        [ForeignKey("StatusId")]
-        public Status? Status { get; set; }
+        public byte StateId { get; set; }
+        [ForeignKey("StateId")]
+        public State? State { get; set; }
 
     }
 }

@@ -7,7 +7,7 @@ namespace QRmenuAPI.Models
 {
 	public class ApplicationUser : IdentityUser
 	{
-        //[Required]
+        
         [StringLength(100, MinimumLength = 2)]
         [Column(TypeName = "nvarchar(100)")]
         public string Name { get; set; } = "";
@@ -29,12 +29,12 @@ namespace QRmenuAPI.Models
         [Column("varchar(30)")]
         public override string? PhoneNumber { get; set; }
 
-        public byte StatusId { get; set; }
+        public byte StateId { get; set; }
 
         public int CompanyId { get; set; }
 
-        [ForeignKey("StatusId")]
-        public Status? Status { get; set; }
+        [ForeignKey("StateId")]
+        public State? State { get; set; }
 
         [ForeignKey("CompanyId")]
         public Company? Company { get; set; }

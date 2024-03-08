@@ -1,4 +1,8 @@
-﻿namespace QRmenuAPI;
+﻿using Microsoft.EntityFrameworkCore;
+using QRmenuAPI.Models;
+using QRmenuAPI.Data;
+
+namespace QRmenuAPI;
 
 public class Program
 {
@@ -13,6 +17,13 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
+        builder.Services.AddDbContext<ApplicationContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDatabase")));
+        builder.Services.AddIdentityCore<ApplicationUser>()
+                .AddEntityFrameworkStores<ApplicationContext>();
+        builder.Services.AddAuthentication();
+        builder.Services.AddAuthorization();
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -22,8 +33,8 @@ public class Program
             app.UseSwaggerUI();
         }
 
+        app.UseAuthentication();
         app.UseAuthorization();
-
 
         app.MapControllers();
 
