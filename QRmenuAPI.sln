@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 25.0.1706.9
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QRmenuAPI", "QRmenuAPI\QRmenuAPI.csproj", "{D28B4433-4FAD-4BCF-96DA-22E509EE88EB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D28B4433-4FAD-4BCF-96DA-22E509EE88EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D28B4433-4FAD-4BCF-96DA-22E509EE88EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D28B4433-4FAD-4BCF-96DA-22E509EE88EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D28B4433-4FAD-4BCF-96DA-22E509EE88EB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {46F00CAE-1506-442E-B36B-FC19C78DB7F7}
+	EndGlobalSection
+EndGlobal
