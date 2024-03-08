@@ -13,7 +13,7 @@ namespace QRmenuAPI.Data
 		public DbSet<Company>? Companies { get; set; }
 		public DbSet<State>? States { get; set; }
 
-
-	}
+        
+    }
 }
 

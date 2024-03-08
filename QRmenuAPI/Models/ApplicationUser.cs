@@ -34,7 +34,7 @@ namespace QRmenuAPI.Models
         public int CompanyId { get; set; }
 
         [ForeignKey("StateId")]
-        public State? State { get; set; }
+        public  State? State { get; set; }
 
         [ForeignKey("CompanyId")]
         public Company? Company { get; set; }

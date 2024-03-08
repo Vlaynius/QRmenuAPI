@@ -50,7 +50,7 @@ namespace QRmenuAPI.Models
         [Required]
         public byte StateId { get; set; }
         [ForeignKey("StateId")]
-        public State? State { get; set; }
+        public  State? State { get; set; }
 
     }
 }
