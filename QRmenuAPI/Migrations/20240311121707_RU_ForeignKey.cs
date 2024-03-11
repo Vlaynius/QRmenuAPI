@@ -47,7 +47,7 @@ namespace QRmenuAPI.Migrations
                 column: "RestaurantId",
                 principalTable: "Restaurants",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.NoAction);
+                onDelete: ReferentialAction.Cascade);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
