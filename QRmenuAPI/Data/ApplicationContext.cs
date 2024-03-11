@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using QRmenuAPI.Models;
@@ -12,8 +12,25 @@ namespace QRmenuAPI.Data
 		}
 		public DbSet<Company>? Companies { get; set; }
 		public DbSet<State>? States { get; set; }
+		public DbSet<Restaurant>? Restaurants { get; set; }
+		public DbSet<RestaurantUser>? RestaurantUsers { get; set; }
+		public DbSet<Category>? Categories { get; set; }
+        public DbSet<Food>? Foods { get; set; }
 
-        
+
+
+        protected override void OnModelCreating(ModelBuilder modelbuilder)
+        {
+			modelbuilder.Entity<ApplicationUser>().HasOne(u => u.State).WithMany().OnDelete(DeleteBehavior.NoAction);
+			modelbuilder.Entity<Restaurant>().HasOne(u => u.State).WithMany().OnDelete(DeleteBehavior.NoAction);
+            modelbuilder.Entity<Category>().HasOne(u => u.State).WithMany().OnDelete(DeleteBehavior.NoAction);
+            modelbuilder.Entity<Food>().HasOne(u => u.State).WithMany().OnDelete(DeleteBehavior.NoAction);
+			modelbuilder.Entity<RestaurantUser>().HasOne(r => r.Restaurant).WithMany().OnDelete(DeleteBehavior.NoAction);
+            modelbuilder.Entity<RestaurantUser>().HasOne(r => r.ApplicationUser).WithMany().OnDelete(DeleteBehavior.NoAction);
+            modelbuilder.Entity<RestaurantUser>().HasKey(ru => new { ru.UserApplicationUserId, ru.RestaurantId });
+			base.OnModelCreating(modelbuilder);
+        }
+       
     }
 }
 
