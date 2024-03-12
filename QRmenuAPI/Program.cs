@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using QRmenuAPI.Models;
 using QRmenuAPI.Data;
-
+using Microsoft.AspNetCore.Identity;
 namespace QRmenuAPI;
 
 public class Program
@@ -19,7 +19,7 @@ public class Program
 
         builder.Services.AddDbContext<ApplicationContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDatabase")));
-        builder.Services.AddIdentityCore<ApplicationUser>()
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationContext>();
         builder.Services.AddAuthentication();
         builder.Services.AddAuthorization();

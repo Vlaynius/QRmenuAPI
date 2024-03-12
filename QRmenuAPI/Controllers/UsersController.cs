@@ -16,12 +16,14 @@ namespace QRmenuAPI.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ApplicationContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
+        
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public UsersController(ApplicationContext context, UserManager<ApplicationUser> userManager)
+        public UsersController(ApplicationContext context, SignInManager<ApplicationUser> signInManager)
         {
             _context = context;
-            _userManager = userManager;
+           
+            _signInManager = signInManager;
         }
 
         // GET: api/Users
@@ -32,7 +34,7 @@ namespace QRmenuAPI.Controllers
           {
               return NotFound();
           }
-           return await _userManager.Users.ToListAsync();
+           return await _signInManager.UserManager.Users.ToListAsync();
             
         }
 
@@ -41,7 +43,7 @@ namespace QRmenuAPI.Controllers
         public async Task<ActionResult<ApplicationUser>> GetApplicationUser(string id)
         {
           
-            var applicationUser = await _userManager.FindByIdAsync(id);
+            var applicationUser = await _signInManager.UserManager.FindByIdAsync(id);
 
             if (applicationUser == null)
             {
@@ -56,13 +58,13 @@ namespace QRmenuAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutApplicationUser(string id, ApplicationUser applicationUser/*, string? Password = null , string? currentPassword = null?*/)
         {
-            var ExistingApplicationUser = await _userManager.FindByIdAsync(id);
+            var ExistingApplicationUser = await _signInManager.UserManager.FindByIdAsync(id);
             ExistingApplicationUser.Name = applicationUser.Name;
             ExistingApplicationUser.PhoneNumber = applicationUser.PhoneNumber;
             ExistingApplicationUser.Email = applicationUser.Email;
             ExistingApplicationUser.StateId = applicationUser.StateId;
 
-            await _userManager.UpdateAsync(ExistingApplicationUser);
+            await _signInManager.UserManager.UpdateAsync(ExistingApplicationUser);
 
             //if(Password != null)
             //{
@@ -77,7 +79,7 @@ namespace QRmenuAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<ApplicationUser>> PostApplicationUser(ApplicationUser applicationUser , string Password)
         {
-            await _userManager.CreateAsync(applicationUser,Password);
+            await _signInManager.UserManager.CreateAsync(applicationUser,Password);
 
             return CreatedAtAction("GetApplicationUser", new { id = applicationUser.Id }, applicationUser);
         }
@@ -87,14 +89,14 @@ namespace QRmenuAPI.Controllers
         public async Task<IActionResult> DeleteApplicationUser(string id)
         {
 
-            var applicationUser = await _userManager.FindByIdAsync(id);
+            var applicationUser = await _signInManager.UserManager.FindByIdAsync(id);
             if (applicationUser == null)
             {
                 return NotFound();
             }
             //await _userManager.DeleteAsync(applicationUser);
             applicationUser.StateId = 0;
-            await _userManager.UpdateAsync(applicationUser);
+            await _signInManager.UserManager.UpdateAsync(applicationUser);
             
             return NoContent();
         }
@@ -102,6 +104,75 @@ namespace QRmenuAPI.Controllers
         private bool ApplicationUserExists(string id)
         {
             return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+        //LogIn
+        [HttpPost("LogIn")]
+        public async Task<bool> LogIn(string userName, string password)
+        {
+          
+            ApplicationUser user =  _signInManager.UserManager.FindByNameAsync(userName).Result;
+            if (user == null)
+            {
+                return false; //false
+            }
+            Microsoft.AspNetCore.Identity.SignInResult signInResult =
+                _signInManager.PasswordSignInAsync(user, password, false, false).Result;
+            
+            return  signInResult.Succeeded;
+        }
+
+        [HttpPost("ForgetPassword")]
+        public  void ForgetPassword(string userName, string NewPassword)
+        {
+            ApplicationUser applicationUser = _signInManager.UserManager.FindByNameAsync(userName).Result;
+            if(User == null)
+            {
+                return ;//Kullanıcı Yok
+            }
+            //var token = await _signInManager.UserManager.GeneratePasswordResetTokenAsync(applicationUser);
+            //var resetPasswordResult = await _signInManager.UserManager.ResetPasswordAsync(applicationUser, token, NewPassword);
+            
+            _signInManager.UserManager.RemovePasswordAsync(applicationUser).Wait();
+            _signInManager.UserManager.AddPasswordAsync(applicationUser,NewPassword).Wait();
+
+           
+
+            //return resetPasswordResult.Succeeded;
+        }
+
+        [HttpPost("ChangePassword")]
+        public async Task<bool> ChangePassword(string userName, string currentPassword, string NewPassword)
+        {
+            ApplicationUser applicationUser = _signInManager.UserManager.FindByNameAsync(userName).Result;
+            if (User == null)
+            {
+                return false;//Kullanıcı Yok
+            }
+
+            var changePasswordResult = await _signInManager.UserManager.ChangePasswordAsync(applicationUser,currentPassword,NewPassword);
+            return changePasswordResult.Succeeded;
+        }
+
+        [HttpPost("PasswordReset")]
+        public string? PasswordReset(string userName)
+        {
+            ApplicationUser applicationUser = _signInManager.UserManager.FindByNameAsync(userName).Result;
+            if (User == null)
+            {
+                return null;//Kullanıcı Yok
+            }
+            return _signInManager.UserManager.GeneratePasswordResetTokenAsync(applicationUser).Result;
+        }
+        [HttpPost("ValidateResetPassword")]
+        public void ValidateResetPassword(string UserName, string token, string newPassword)
+        {
+            ApplicationUser applicationUser = _signInManager.UserManager.FindByNameAsync(UserName).Result;
+            if (User == null)
+            {
+                return ;//Kullanıcı Yok
+            }
+            _signInManager.UserManager.ResetPasswordAsync(applicationUser, token, newPassword).Wait();
         }
     }
 }
