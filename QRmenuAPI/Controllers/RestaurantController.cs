@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ namespace QRmenuAPI.Controllers
 
         // GET: api/Restaurant
         [HttpGet]
+        [Authorize(Roles = "CompanyAdministrator")]
         public async Task<ActionResult<IEnumerable<Restaurant>>> GetRestaurant()
         {
           if (_context.Restaurants == null)
@@ -34,6 +36,7 @@ namespace QRmenuAPI.Controllers
 
         // GET: api/Restaurant/5
         [HttpGet("{id}")]
+        [Authorize(Roles = ("RestaurantAdministrator,CompanyAdministrator"))]
         public async Task<ActionResult<Restaurant>> GetRestaurant(int id)
         {
           if (_context.Restaurants == null)
