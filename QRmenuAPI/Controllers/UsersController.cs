@@ -165,14 +165,20 @@ namespace QRmenuAPI.Controllers
             return _signInManager.UserManager.GeneratePasswordResetTokenAsync(applicationUser).Result;
         }
         [HttpPost("ValidateResetPassword")]
-        public void ValidateResetPassword(string UserName, string token, string newPassword)
+        public ActionResult<string> ValidateResetPassword(string UserName, string token, string newPassword)
         {
             ApplicationUser applicationUser = _signInManager.UserManager.FindByNameAsync(UserName).Result;
             if (User == null)
             {
-                return ;//Kullanıcı Yok
+                return NotFound();//Kullanıcı Yok
             }
-            _signInManager.UserManager.ResetPasswordAsync(applicationUser, token, newPassword).Wait();
+            IdentityResult identityResult = _signInManager.UserManager.ResetPasswordAsync(applicationUser, token, newPassword).Result;
+
+            if (!identityResult.Succeeded)
+            {
+                return identityResult.Errors.First().Description;
+            }
+            return Ok("Password Reset Successfull");
         }
     }
 }

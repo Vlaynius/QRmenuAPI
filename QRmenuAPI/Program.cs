@@ -19,8 +19,10 @@ public class Program
 
         builder.Services.AddDbContext<ApplicationContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDatabase")));
+
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationContext>();
+                .AddEntityFrameworkStores<ApplicationContext>().AddDefaultTokenProviders() ;
+
         builder.Services.AddAuthentication();
         builder.Services.AddAuthorization();
 
