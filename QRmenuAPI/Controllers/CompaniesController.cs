@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QRmenuAPI.Data;
 using QRmenuAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace QRmenuAPI.Controllers
 {
@@ -83,6 +80,7 @@ namespace QRmenuAPI.Controllers
 
         // POST: api/Companies
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Company>> PostCompany(Company company)
         {
