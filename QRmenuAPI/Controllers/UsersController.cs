@@ -16,13 +16,13 @@ namespace QRmenuAPI.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ApplicationContext _context;
-        
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public UsersController(ApplicationContext context, SignInManager<ApplicationUser> signInManager)
+        public UsersController(ApplicationContext context, SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager)
         {
             _context = context;
-           
+            _roleManager = roleManager;
             _signInManager = signInManager;
         }
 
@@ -179,6 +179,14 @@ namespace QRmenuAPI.Controllers
                 return identityResult.Errors.First().Description;
             }
             return Ok("Password Reset Successfull");
+        }
+
+        [HttpPost("AssignRole")]
+        public void AssignRole(string userId , string roleId)
+        {
+            ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(userId).Result;
+            IdentityRole applicationRole = _roleManager.FindByIdAsync(roleId).Result;
+            _signInManager.UserManager.AddToRoleAsync(applicationUser, applicationRole.Name);
         }
     }
 }

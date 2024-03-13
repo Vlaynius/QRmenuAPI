@@ -18,6 +18,7 @@ namespace QRmenuAPI.Data
 		public DbSet<RestaurantUser>? RestaurantUsers { get; set; }
 		public DbSet<Category>? Categories { get; set; }
         public DbSet<Food>? Foods { get; set; }
+        
 
 
 
