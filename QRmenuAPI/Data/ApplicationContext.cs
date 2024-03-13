@@ -35,7 +35,9 @@ namespace QRmenuAPI.Data
 				new State { Id = 0, Name = "Deleted"},
                 new State { Id = 1, Name = "Active" },
                 new State { Id = 2, Name = "Passive" });
-			base.OnModelCreating(modelbuilder);
+            //modelbuilder.Entity<Company>().HasData(
+            //    new Company { Id = 1, StateId = 1, AddressDetail = "Administrator", Name = "Admin", Phone = "11122233344", Email = "admin@admin", PostalCode = "34100", TaxNumber = "11122233344", RegisterDate = DateTime.Now }); ;
+            base.OnModelCreating(modelbuilder);
         }
 
 

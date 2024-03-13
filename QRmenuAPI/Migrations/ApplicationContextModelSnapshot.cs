@@ -267,7 +267,7 @@ namespace QRmenuAPI.Migrations
 
                     b.HasIndex("StateId");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("QRmenuAPI.Models.Company", b =>
@@ -322,7 +322,7 @@ namespace QRmenuAPI.Migrations
 
                     b.HasIndex("StateId");
 
-                    b.ToTable("Companies");
+                    b.ToTable("Companies", (string)null);
                 });
 
             modelBuilder.Entity("QRmenuAPI.Models.Food", b =>
@@ -360,7 +360,7 @@ namespace QRmenuAPI.Migrations
 
                     b.HasIndex("StateId");
 
-                    b.ToTable("Foods");
+                    b.ToTable("Foods", (string)null);
                 });
 
             modelBuilder.Entity("QRmenuAPI.Models.Restaurant", b =>
@@ -406,7 +406,7 @@ namespace QRmenuAPI.Migrations
 
                     b.HasIndex("StateId");
 
-                    b.ToTable("Restaurants");
+                    b.ToTable("Restaurants", (string)null);
                 });
 
             modelBuilder.Entity("QRmenuAPI.Models.RestaurantUser", b =>
@@ -421,7 +421,7 @@ namespace QRmenuAPI.Migrations
 
                     b.HasIndex("RestaurantId");
 
-                    b.ToTable("RestaurantUsers");
+                    b.ToTable("RestaurantUsers", (string)null);
                 });
 
             modelBuilder.Entity("QRmenuAPI.Models.State", b =>
@@ -436,7 +436,7 @@ namespace QRmenuAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("States");
+                    b.ToTable("States", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
