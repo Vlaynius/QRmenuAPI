@@ -2,6 +2,8 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using QRmenuAPI.Models;
+using Microsoft.AspNetCore.Identity;
+
 namespace QRmenuAPI.Data
 {
     public class ApplicationContext : IdentityDbContext<ApplicationUser>
@@ -34,7 +36,8 @@ namespace QRmenuAPI.Data
                 new State { Id = 2, Name = "Passive" });
 			base.OnModelCreating(modelbuilder);
         }
-       
+
+
     }
 }
 
