@@ -34,8 +34,8 @@ namespace QRmenuAPI.Controllers
           {
               return NotFound();
           }
-           return await _signInManager.UserManager.Users.ToListAsync();
-            
+            return await _signInManager.UserManager.Users.ToListAsync();
+
         }
 
         // GET: api/Users/5
