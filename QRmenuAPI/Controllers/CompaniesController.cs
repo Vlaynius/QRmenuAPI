@@ -55,37 +55,19 @@ namespace QRmenuAPI.Controllers
         // PUT: api/Companies/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        [Authorize(Roles = "CompanyAdministrator")]
-        public async Task<IActionResult> PutCompany(int id, Company company)
+        //[Authorize(Roles = "CompanyAdministrator")]
+        [Authorize(Policy = "CompAdmin")]
+        public  ActionResult PutCompany(int id, Company company)
         {
             if (User.HasClaim("CompanyId", id.ToString()) == false)
             {
                 return Unauthorized();
             }
-            if (id != company.Id)
-            {
-                return BadRequest();
-            }
+            
 
             _context.Entry(company).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CompanyExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            _context.SaveChanges();
+            return Ok();
         }
 
         // POST: api/Companies
