@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using QRmenuAPI.Data;
 using QRmenuAPI.Models;
 using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
 
@@ -99,7 +98,7 @@ namespace QRmenuAPI.Controllers
         [HttpPost("LogIn")]
         public bool LogIn(string userName, string password)
         {
-            Claim claim;
+            
             ApplicationUser user =  _signInManager.UserManager.FindByNameAsync(userName).Result;
             if (user == null)
             {
@@ -107,12 +106,7 @@ namespace QRmenuAPI.Controllers
             }
             Microsoft.AspNetCore.Identity.SignInResult signInResult =
                 _signInManager.PasswordSignInAsync(user, password, false, false).Result;
-            if (signInResult.Succeeded)
-            {
-                claim = new Claim("CompanyId", user.CompanyId.ToString());
-                _signInManager.UserManager.AddClaimAsync(user,claim).Wait();
-            }
-
+            
             return signInResult.Succeeded;
         }
 

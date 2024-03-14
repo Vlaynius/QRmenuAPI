@@ -5,6 +5,7 @@ using QRmenuAPI.Data;
 using QRmenuAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace QRmenuAPI.Controllers
 {
@@ -93,6 +94,7 @@ namespace QRmenuAPI.Controllers
         [HttpPost]
         public int PostCompany(Company company)
         {
+            Claim claim;
             ApplicationUser applicationUser = new ApplicationUser();
             _context.Companies!.Add(company);
             _context.SaveChanges();
@@ -105,6 +107,8 @@ namespace QRmenuAPI.Controllers
             applicationUser.UserName = "Administrator" + company.Id.ToString();
             _userManager.CreateAsync(applicationUser).Wait();
             _userManager.AddToRoleAsync(applicationUser, "CompanyAdministrator").Wait();
+            claim = new Claim("CompanyId", applicationUser.CompanyId.ToString());
+            _userManager.AddClaimAsync(applicationUser, claim).Wait();
 
             return company.Id;
         }
