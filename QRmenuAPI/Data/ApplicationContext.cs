@@ -19,9 +19,6 @@ namespace QRmenuAPI.Data
 		public DbSet<Category>? Categories { get; set; }
         public DbSet<Food>? Foods { get; set; }
         
-
-
-
         protected override void OnModelCreating(ModelBuilder modelbuilder)
         {
 			modelbuilder.Entity<ApplicationUser>().HasOne(u => u.State).WithMany().OnDelete(DeleteBehavior.NoAction);
@@ -34,7 +31,5 @@ namespace QRmenuAPI.Data
 			base.OnModelCreating(modelbuilder);
         }
 
-
     }
 }
-

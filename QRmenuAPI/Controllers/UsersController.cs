@@ -1,13 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QRmenuAPI.Data;
 using QRmenuAPI.Models;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace QRmenuAPI.Controllers
 {
@@ -53,52 +52,42 @@ namespace QRmenuAPI.Controllers
             return applicationUser;
         }
 
-        // PUT: api/Users/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(Roles = "CompanyAdministrator")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutApplicationUser(string id, ApplicationUser applicationUser/*, string? Password = null , string? currentPassword = null?*/)
+        public OkResult PutApplicationUser(ApplicationUser applicationUser)
         {
-            var ExistingApplicationUser = await _signInManager.UserManager.FindByIdAsync(id);
-            ExistingApplicationUser.Name = applicationUser.Name;
-            ExistingApplicationUser.PhoneNumber = applicationUser.PhoneNumber;
-            ExistingApplicationUser.Email = applicationUser.Email;
-            ExistingApplicationUser.StateId = applicationUser.StateId;
+            ApplicationUser existingApplicationUser = _signInManager.UserManager.FindByIdAsync(applicationUser.Id).Result;
 
-            await _signInManager.UserManager.UpdateAsync(ExistingApplicationUser);
-
-            //if(Password != null)
-            //{
-            //   await _userManager.ChangePasswordAsync(ExistingApplicationUser, currentPassword, Password);
-            //}
-
-            return NoContent();
+            existingApplicationUser.Email = applicationUser.Email;
+            existingApplicationUser.Name = applicationUser.Name;
+            existingApplicationUser.PhoneNumber = applicationUser.PhoneNumber;
+            existingApplicationUser.StateId = applicationUser.StateId;
+            existingApplicationUser.UserName = applicationUser.UserName;
+            _signInManager.UserManager.UpdateAsync(existingApplicationUser);
+            return Ok();
         }
 
-        // POST: api/Users
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(Roles = "CompanyAdministrator")]
         [HttpPost]
-        public async Task<ActionResult<ApplicationUser>> PostApplicationUser(ApplicationUser applicationUser , string Password)
+        public string PostApplicationUser(ApplicationUser applicationUser, string passWord)
         {
-            await _signInManager.UserManager.CreateAsync(applicationUser,Password);
-
-            return CreatedAtAction("GetApplicationUser", new { id = applicationUser.Id }, applicationUser);
+            _signInManager.UserManager.CreateAsync(applicationUser, passWord).Wait();
+            return applicationUser.Id;
         }
 
-        // DELETE: api/Users/5
+        [Authorize(Roles = "CompanyAdministrator")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteApplicationUser(string id)
+        public ActionResult DeleteApplicationUser(string id)
         {
+            ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(id).Result;
 
-            var applicationUser = await _signInManager.UserManager.FindByIdAsync(id);
             if (applicationUser == null)
             {
                 return NotFound();
             }
-            //await _userManager.DeleteAsync(applicationUser);
             applicationUser.StateId = 0;
-            await _signInManager.UserManager.UpdateAsync(applicationUser);
-            
-            return NoContent();
+            _signInManager.UserManager.UpdateAsync(applicationUser);
+            return Ok();
         }
 
         private bool ApplicationUserExists(string id)
@@ -108,9 +97,9 @@ namespace QRmenuAPI.Controllers
 
         //LogIn
         [HttpPost("LogIn")]
-        public async Task<bool> LogIn(string userName, string password)
+        public bool LogIn(string userName, string password)
         {
-          
+            Claim claim;
             ApplicationUser user =  _signInManager.UserManager.FindByNameAsync(userName).Result;
             if (user == null)
             {
@@ -118,8 +107,13 @@ namespace QRmenuAPI.Controllers
             }
             Microsoft.AspNetCore.Identity.SignInResult signInResult =
                 _signInManager.PasswordSignInAsync(user, password, false, false).Result;
-            
-            return  signInResult.Succeeded;
+            if (signInResult.Succeeded)
+            {
+                claim = new Claim("CompanyId", user.CompanyId.ToString());
+                _signInManager.UserManager.AddClaimAsync(user,claim).Wait();
+            }
+
+            return signInResult.Succeeded;
         }
 
         [HttpPost("ForgetPassword")]
