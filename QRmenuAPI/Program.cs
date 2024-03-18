@@ -88,6 +88,9 @@ public class Program
                         roleManager.CreateAsync(identityRole).Wait();
                         identityRole = new IdentityRole("CompanyAdministrator");
                         roleManager.CreateAsync(identityRole).Wait();
+                        identityRole = new IdentityRole("RestaurantAdministrator");
+                        roleManager.CreateAsync(identityRole).Wait();
+
                     }
                 }
                 UserManager<ApplicationUser>? userManager = app.Services.CreateScope().ServiceProvider.GetService<UserManager<ApplicationUser>>();

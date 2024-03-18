@@ -50,6 +50,7 @@ namespace QRmenuAPI.Controllers
         // PUT: api/Categories/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        //Claim --> Company Tüm restoranlarını , Restaurant kendi restaurant'larını editleyebilmili
         public async Task<IActionResult> PutCategory(int id, Category category)
         {
             if (id != category.Id)
@@ -81,6 +82,7 @@ namespace QRmenuAPI.Controllers
         // POST: api/Categories
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        //Claim --> Company Tüm restoranlarını , Restaurant kendi restaurant'larını editleyebilmili
         public async Task<ActionResult<Category>> PostCategory(Category category)
         {
             if (_context.Categories == null)
@@ -95,21 +97,24 @@ namespace QRmenuAPI.Controllers
 
         // DELETE: api/Categories/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCategory(int id)
+        //Claim --> Company Tüm restoranlarını , Restaurant kendi restaurant'larını editleyebilmili
+        public ActionResult DeleteCategory(int id)
         {
             if (_context.Categories == null)
             {
                 return NotFound();
             }
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null)
+            Category? category = _context.Categories!.Where(c => c.Id == id).Include(c => c.Foods).FirstOrDefault();
+            if (category != null)
             {
-                return NotFound();
+                category.StateId = 0;
+                foreach (Food food in category.Foods!)
+                {
+                    food.StateId = 0;
+                }
             }
-
-            _context.Categories.Remove(category);
-            await _context.SaveChangesAsync();
-
+            _context.Categories?.Update(category!);
+            _context.SaveChanges();
             return NoContent();
         }
 

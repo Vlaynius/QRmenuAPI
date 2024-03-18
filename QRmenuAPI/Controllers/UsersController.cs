@@ -26,6 +26,7 @@ namespace QRmenuAPI.Controllers
 
         // GET: api/Users
         [HttpGet]
+        [Authorize(Roles = "Administrator")]
         public async Task<ActionResult<IEnumerable<ApplicationUser>>> GetUsers()
         {
           if (_context.Users == null)
@@ -38,6 +39,7 @@ namespace QRmenuAPI.Controllers
 
         // GET: api/Users/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Administrator")]
         public async Task<ActionResult<ApplicationUser>> GetApplicationUser(string id)
         {
           
@@ -51,8 +53,9 @@ namespace QRmenuAPI.Controllers
             return applicationUser;
         }
 
-        [Authorize(Roles = "CompanyAdministrator")]
+        //[Authorize(Roles = "CompanyAdministrator")]
         [HttpPut("{id}")]
+        //Claim --> Her kullanıcı kendisini ve altındakini güncelleyebilmeli
         public OkResult PutApplicationUser(ApplicationUser applicationUser)
         {
             ApplicationUser existingApplicationUser = _signInManager.UserManager.FindByIdAsync(applicationUser.Id).Result;
@@ -110,6 +113,7 @@ namespace QRmenuAPI.Controllers
             return signInResult.Succeeded;
         }
 
+        [Authorize(Roles = "Administrator")]
         [HttpPost("ForgetPassword")]
         public  void ForgetPassword(string userName, string NewPassword)
         {
@@ -128,7 +132,7 @@ namespace QRmenuAPI.Controllers
 
             //return resetPasswordResult.Succeeded;
         }
-
+        [Authorize]
         [HttpPost("ChangePassword")]
         public async Task<bool> ChangePassword(string userName, string currentPassword, string NewPassword)
         {
@@ -168,7 +172,7 @@ namespace QRmenuAPI.Controllers
             }
             return Ok("Password Reset Successfull");
         }
-
+        //Admin (her kullanıcıya atama yapalilmeli), Company admin(ResAdmin'e atama yapabilmeli)***
         [HttpPost("AssignRole")]
         public void AssignRole(string userId , string roleId)
         {

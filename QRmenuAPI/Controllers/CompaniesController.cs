@@ -98,20 +98,50 @@ namespace QRmenuAPI.Controllers
         // DELETE: api/Companies/5
         [HttpDelete("{id}")]
         [Authorize(Roles = "Administrator,CompanyAdministrator")]
-        public async Task<IActionResult> DeleteCompany(int id)
+        public ActionResult DeleteCompany(int id)
         {
             if (_context.Companies == null)
             {
                 return NotFound();
             }
-            var company = await _context.Companies.FindAsync(id);
-            if (company == null)
+            //var company = await _context.Companies.Where(c=> c.Id == id).Include(c=>c.Restaurants).FirstOrDefault();
+            Company? company = _context.Companies!.Where(c => c.Id == id).Include(c => c.applicationUsers).Include(c => c.Restaurants)!.ThenInclude(c => c.Categories).FirstOrDefault();
+            if (company != null)
             {
-                return NotFound();
-            }
+                company.StateId = 0;
+                if(company.applicationUsers != null)
+                {
+                    foreach (ApplicationUser user in company.applicationUsers!)
+                    {
+                        user.StateId = 0;
+                    }
+                }
 
-            _context.Companies.Remove(company);
-            await _context.SaveChangesAsync();
+                if(company.Restaurants != null)
+                {
+                    foreach (Restaurant rest in company.Restaurants!)
+                    {
+                        rest.StateId = 0;
+                        if(rest.Categories != null)
+                        {
+                            foreach (Category cat in rest.Categories!)
+                            {
+                                cat.StateId = 0;
+                                if(cat.Foods != null)
+                                {
+                                    foreach (Food food in cat.Foods!)
+                                    {
+                                        food.StateId = 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                _context.Companies!.Update(company);
+            }
+            _context.SaveChanges();
 
             return NoContent();
         }

@@ -101,21 +101,36 @@ namespace QRmenuAPI.Controllers
 
         // DELETE: api/Restaurant/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRestaurant(int id)
+        public ActionResult DeleteRestaurant(int id)
         {
             if (_context.Restaurants == null)
             {
                 return NotFound();
             }
-            var restaurant = await _context.Restaurants.FindAsync(id);
-            if (restaurant == null)
+            Restaurant? restaurant = _context.Restaurants.Where(r => r.Id == id).Include(r => r.Categories)!.ThenInclude(r => r.Foods)!.FirstOrDefault();
+            if (restaurant != null)
             {
-                return NotFound();
+                restaurant.StateId = 0;
+                if(restaurant.Categories != null)
+                {
+                    foreach (Category cat in restaurant.Categories)
+                    {
+                        cat.StateId = 0;
+                        if(cat.Foods != null)
+                        {
+                            foreach (Food food in cat.Foods)
+                            {
+                                food.StateId = 0;
+                            }
+                        }
+                        
+                    }
+                }
+                
             }
-
-            _context.Restaurants.Remove(restaurant);
-            await _context.SaveChangesAsync();
-
+            _context.Restaurants.Update(restaurant);
+            _context.SaveChanges();
+            
             return NoContent();
         }
 

@@ -21,7 +21,7 @@ namespace QRmenuAPI.Models
         [Column(TypeName = "nvarchar(200)")]
         public string? Description { get; set; }
 
-        public byte StatusId { get; set; }
+        public byte StateId { get; set; }
 
         [ForeignKey("StateId")]
         public State? State { get; set; }

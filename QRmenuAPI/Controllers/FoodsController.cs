@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QRmenuAPI.Data;
 using QRmenuAPI.Models;
@@ -48,6 +49,7 @@ namespace QRmenuAPI.Controllers
         // PUT: api/Foods/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        //Claim --> Company Tüm restoranlarını , Restaurant kendi restaurant'larını editleyebilmili
         public async Task<IActionResult> PutFood(int id, Food food)
         {
             if (id != food.Id)
@@ -79,6 +81,7 @@ namespace QRmenuAPI.Controllers
         // POST: api/Foods
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        //Claim --> Company Tüm restoranlarını , Restaurant kendi restaurant'larını editleyebilmili
         public async Task<ActionResult<Food>> PostFood(Food food)
         {
             if (_context.Foods == null)
@@ -93,20 +96,19 @@ namespace QRmenuAPI.Controllers
 
         // DELETE: api/Foods/5
         [HttpDelete("{id}")]
+        //Claim --> Company Tüm restoranlarını , Restaurant kendi restaurant'larını editleyebilmili
         public async Task<IActionResult> DeleteFood(int id)
         {
             if (_context.Foods == null)
             {
                 return NotFound();
             }
-            var food = await _context.Foods.FindAsync(id);
-            if (food == null)
-            {
-                return NotFound();
-            }
+            Food? food =  _context.Foods.Find(id);
 
-            _context.Foods.Remove(food);
-            await _context.SaveChangesAsync();
+            if ( food != null)
+            {
+                food.StateId = 0;
+            }
 
             return NoContent();
         }
