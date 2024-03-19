@@ -99,15 +99,15 @@ namespace QRmenuAPI.Controllers
         [HttpDelete("{id}")]
         public ActionResult DeleteApplicationUser(string id)
         {
-            bool isCan;
+            bool isAdmin = false;
             ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(id).Result;
 
             if (applicationUser == null)
             {
                 return NotFound();
             }
-            isCan = User.IsInRole("Administrator");
-            if(isCan == true)
+            isAdmin = User.IsInRole("Administrator");
+            if(isAdmin == true)
             {
                 applicationUser.StateId = 0;
                 _signInManager.UserManager.UpdateAsync(applicationUser);

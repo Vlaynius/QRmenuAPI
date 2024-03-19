@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QRmenuAPI.Data;
@@ -12,10 +13,11 @@ namespace QRmenuAPI.Controllers
     public class CategoriesController : ControllerBase
     {
         private readonly ApplicationContext _context;
-
-        public CategoriesController(ApplicationContext context)
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        public CategoriesController(ApplicationContext context, SignInManager<ApplicationUser> signInManager)
         {
             _context = context;
+            _signInManager = signInManager;
         }
 
         // GET: api/Categories
@@ -52,19 +54,37 @@ namespace QRmenuAPI.Controllers
         // PUT: api/Categories/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "CompanyAdministrator, RestaurantAdministrator")]
         //Claim --> Company Tüm restoranlarını , Restaurant kendi restaurant'larını editleyebilmili
-        public async Task<IActionResult> PutCategory(int id, Category category)
+        public ActionResult PutCategory(int id, Category category)
         {
             if (id != category.Id)
             {
                 return BadRequest();
             }
+            ApplicationUser currentUser = _signInManager.UserManager.GetUserAsync(User).Result;
+            if(User.HasClaim("RestaurantId", category.RestaurantId.ToString()))
+            {
 
+            }
+            else
+            {
+                var restaurant = _context.Restaurants.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
+                if (User.HasClaim("CompanyId", restaurant.CompanyId.ToString()))
+                {
+
+                }
+                else
+                {
+                    Unauthorized();
+                }
+
+            }
             _context.Entry(category).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                 _context.SaveChangesAsync().Wait();
             }
             catch (DbUpdateConcurrencyException)
             {
