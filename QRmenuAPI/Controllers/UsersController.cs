@@ -124,11 +124,18 @@ namespace QRmenuAPI.Controllers
             }
             //var token = await _signInManager.UserManager.GeneratePasswordResetTokenAsync(applicationUser);
             //var resetPasswordResult = await _signInManager.UserManager.ResetPasswordAsync(applicationUser, token, NewPassword);
-            
-            _signInManager.UserManager.RemovePasswordAsync(applicationUser).Wait();
-            _signInManager.UserManager.AddPasswordAsync(applicationUser,NewPassword).Wait();
+            try
+            {
 
-           
+                _signInManager.UserManager.RemovePasswordAsync(applicationUser).Wait();
+                _signInManager.UserManager.AddPasswordAsync(applicationUser, NewPassword).Wait();
+
+            }
+            catch (Exception)
+            {
+                Ok("Bit Hata Oluştu");
+            }
+
 
             //return resetPasswordResult.Succeeded;
         }
@@ -172,13 +179,25 @@ namespace QRmenuAPI.Controllers
             }
             return Ok("Password Reset Successfull");
         }
+        
         //Admin (her kullanıcıya atama yapalilmeli), Company admin(ResAdmin'e atama yapabilmeli)***
         [HttpPost("AssignRole")]
-        public void AssignRole(string userId , string roleId)
+        [Authorize(Roles = "CompanyAdministrator")]
+        public ActionResult AssignRestaurantRole(string userId , int Companyid)
         {
-            ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(userId).Result;
-            IdentityRole applicationRole = _roleManager.FindByIdAsync(roleId).Result;
-            _signInManager.UserManager.AddToRoleAsync(applicationUser, applicationRole.Name);
+            if (User.HasClaim("CompanyId", Companyid.ToString()) == false)
+            {
+                return Unauthorized();
+            }
+            try
+            {
+                ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(userId).Result;
+                _signInManager.UserManager.AddToRoleAsync(applicationUser, "RestaurantAdministrator");
+            } catch( Exception)
+            {
+                return Ok("ISLEM SIRASINDA BİR HATA OLUŞTU");
+            }
+            return Ok("ROL ATAMA BAŞARILI");
         }
     }
 }

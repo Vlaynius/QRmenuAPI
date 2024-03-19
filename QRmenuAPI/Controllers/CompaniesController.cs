@@ -55,7 +55,6 @@ namespace QRmenuAPI.Controllers
         // PUT: api/Companies/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        //[Authorize(Roles = "CompanyAdministrator")]
         [Authorize(Policy = "CompAdmin")]
         public  ActionResult PutCompany(int id, Company company)
         {
@@ -76,35 +75,35 @@ namespace QRmenuAPI.Controllers
         [HttpPost]
         public int PostCompany(Company company)
         {
-            Claim claim;
+            Claim Compclaim ;
             ApplicationUser applicationUser = new ApplicationUser();
             _context.Companies!.Add(company);
             _context.SaveChanges();
             applicationUser.CompanyId = company.Id;
             applicationUser.Email = "abc@def";
-            applicationUser.Name = "Administrator";
+            applicationUser.Name = company.Name +"Administrator";
             applicationUser.PhoneNumber = "11122233344";
             applicationUser.RegisterDate = DateTime.Today;
             applicationUser.StateId = 1;
-            applicationUser.UserName = "Administrator" + company.Id.ToString();
+            applicationUser.UserName = "CompanyAdministrator" + company.Id.ToString();
             _userManager.CreateAsync(applicationUser).Wait();
             _userManager.AddToRoleAsync(applicationUser, "CompanyAdministrator").Wait();
-            claim = new Claim("CompanyId", applicationUser.CompanyId.ToString());
-            _userManager.AddClaimAsync(applicationUser, claim).Wait();
-
+            Compclaim = new Claim("CompanyId", applicationUser.CompanyId.ToString());
+            _userManager.AddClaimAsync(applicationUser, Compclaim).Wait();
+            
             return company.Id;
         }
 
         // DELETE: api/Companies/5
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Administrator,CompanyAdministrator")]
+        //[Authorize(Roles = "Administrator,CompanyAdministrator")]
+        [Authorize(Policy = "CompAdmin")]
         public ActionResult DeleteCompany(int id)
         {
             if (_context.Companies == null)
             {
                 return NotFound();
             }
-            //var company = await _context.Companies.Where(c=> c.Id == id).Include(c=>c.Restaurants).FirstOrDefault();
             Company? company = _context.Companies!.Where(c => c.Id == id).Include(c => c.applicationUsers).Include(c => c.Restaurants)!.ThenInclude(c => c.Categories).FirstOrDefault();
             if (company != null)
             {

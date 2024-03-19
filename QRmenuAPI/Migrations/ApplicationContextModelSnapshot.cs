@@ -348,10 +348,7 @@ namespace QRmenuAPI.Migrations
                     b.Property<float>("Price")
                         .HasColumnType("real");
 
-                    b.Property<byte?>("StateId")
-                        .HasColumnType("tinyint");
-
-                    b.Property<byte>("StatusId")
+                    b.Property<byte>("StateId")
                         .HasColumnType("tinyint");
 
                     b.HasKey("Id");
@@ -493,7 +490,7 @@ namespace QRmenuAPI.Migrations
             modelBuilder.Entity("QRmenuAPI.Models.ApplicationUser", b =>
                 {
                     b.HasOne("QRmenuAPI.Models.Company", "Company")
-                        .WithMany()
+                        .WithMany("applicationUsers")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -512,7 +509,7 @@ namespace QRmenuAPI.Migrations
             modelBuilder.Entity("QRmenuAPI.Models.Category", b =>
                 {
                     b.HasOne("QRmenuAPI.Models.Restaurant", "Restaurant")
-                        .WithMany()
+                        .WithMany("Categories")
                         .HasForeignKey("RestaurantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -542,7 +539,7 @@ namespace QRmenuAPI.Migrations
             modelBuilder.Entity("QRmenuAPI.Models.Food", b =>
                 {
                     b.HasOne("QRmenuAPI.Models.Category", "Category")
-                        .WithMany()
+                        .WithMany("Foods")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -550,7 +547,8 @@ namespace QRmenuAPI.Migrations
                     b.HasOne("QRmenuAPI.Models.State", "State")
                         .WithMany()
                         .HasForeignKey("StateId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("Category");
 
@@ -560,7 +558,7 @@ namespace QRmenuAPI.Migrations
             modelBuilder.Entity("QRmenuAPI.Models.Restaurant", b =>
                 {
                     b.HasOne("QRmenuAPI.Models.Company", "Company")
-                        .WithMany()
+                        .WithMany("Restaurants")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -593,6 +591,23 @@ namespace QRmenuAPI.Migrations
                     b.Navigation("ApplicationUser");
 
                     b.Navigation("Restaurant");
+                });
+
+            modelBuilder.Entity("QRmenuAPI.Models.Category", b =>
+                {
+                    b.Navigation("Foods");
+                });
+
+            modelBuilder.Entity("QRmenuAPI.Models.Company", b =>
+                {
+                    b.Navigation("Restaurants");
+
+                    b.Navigation("applicationUsers");
+                });
+
+            modelBuilder.Entity("QRmenuAPI.Models.Restaurant", b =>
+                {
+                    b.Navigation("Categories");
                 });
 #pragma warning restore 612, 618
         }

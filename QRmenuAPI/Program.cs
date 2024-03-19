@@ -29,8 +29,8 @@ public class Program
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<ApplicationContext>().AddDefaultTokenProviders();
         builder.Services.AddAuthentication();
-        builder.Services.AddAuthorization(options => options.AddPolicy("CompAdmin",
-            policy => policy.RequireClaim("CompanyId")));
+        builder.Services.AddAuthorization(options => options.AddPolicy("CompAdmin",policy => policy.RequireClaim("CompanyId")));
+        builder.Services.AddAuthorization(options => options.AddPolicy("RestAdmin", policy => policy.RequireClaim("RestaurantId")));
 
         var app = builder.Build();
 
