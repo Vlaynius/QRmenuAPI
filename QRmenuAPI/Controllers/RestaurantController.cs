@@ -40,19 +40,13 @@ namespace QRmenuAPI.Controllers
 
         // GET: api/Restaurant/5
         [HttpGet("{id}")]
-        [Authorize(Policy = "CompAdmin")]
         public async Task<ActionResult<Restaurant>> GetRestaurant(int id)
         {
-            if(User.HasClaim("CompanyId", id.ToString()))
+            var restaurant = await _context.Restaurants!.FindAsync(id);
+            if (_context.Restaurants == null)
             {
-                return Unauthorized();
+                return NotFound();
             }
-              if (_context.Restaurants == null)
-              {
-                  return NotFound();
-              }
-            var restaurant = await _context.Restaurants.FindAsync(id);
-
             if (restaurant == null)
             {
                 return NotFound();
@@ -64,10 +58,15 @@ namespace QRmenuAPI.Controllers
         // PUT: api/Restaurant/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        [Authorize(Policy = "RestAdmin ")]
+        [Authorize(Policy = "RestAdmin , CompAdmin")]
         public ActionResult PutRestaurant(int id, Restaurant restaurant)
         {
             if (User.HasClaim("RestaurantId", id.ToString()) == false)
+            {
+                return Unauthorized();
+            }
+
+            if(User.HasClaim("CompanyId", restaurant.CompanyId.ToString())== false)
             {
                 return Unauthorized();
             }
@@ -111,35 +110,37 @@ namespace QRmenuAPI.Controllers
         [Authorize(Policy = "CompAdmin")]
         public ActionResult DeleteRestaurant(int id)
         {
-            if (User.HasClaim("CompanyId", id.ToString()))
-            {
-                return Unauthorized();
-            }
             if (_context.Restaurants == null)
             {
                 return NotFound();
             }
+
             Restaurant? restaurant = _context.Restaurants.Where(r => r.Id == id).Include(r => r.Categories)!.ThenInclude(r => r.Foods)!.FirstOrDefault();
             if (restaurant != null)
             {
-                restaurant.StateId = 0;
-                if(restaurant.Categories != null)
-                {
-                    foreach (Category cat in restaurant.Categories)
-                    {
-                        cat.StateId = 0;
-                        if(cat.Foods != null)
-                        {
-                            foreach (Food food in cat.Foods)
-                            {
-                                food.StateId = 0;
-                            }
-                        }
-                        
-                    }
-                }
-                
+                return NotFound();
             }
+
+            if (User.HasClaim("CompanyId", restaurant.CompanyId.ToString()))
+            {
+                return Unauthorized();
+            }
+            
+              restaurant.StateId = 0;
+              if(restaurant.Categories != null)
+              {
+                  foreach (Category cat in restaurant.Categories)
+                  {
+                      cat.StateId = 0;
+                      if(cat.Foods != null)
+                      {
+                          foreach (Food food in cat.Foods)
+                          {
+                            food.StateId = 0;
+                          }
+                      } 
+                  }
+              }
             _context.Restaurants.Update(restaurant);
             _context.SaveChanges();
             

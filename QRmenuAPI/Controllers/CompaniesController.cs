@@ -97,13 +97,16 @@ namespace QRmenuAPI.Controllers
         // DELETE: api/Companies/5
         [HttpDelete("{id}")]
         //[Authorize(Roles = "Administrator,CompanyAdministrator")]
-        [Authorize(Policy = "CompAdmin")]
+        [Authorize(Roles ="Administrator")]
         public ActionResult DeleteCompany(int id)
         {
+            
+       
             if (_context.Companies == null)
             {
                 return NotFound();
             }
+
             Company? company = _context.Companies!.Where(c => c.Id == id).Include(c => c.applicationUsers).Include(c => c.Restaurants)!.ThenInclude(c => c.Categories).FirstOrDefault();
             if (company != null)
             {

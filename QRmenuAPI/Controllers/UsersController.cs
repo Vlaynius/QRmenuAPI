@@ -55,10 +55,28 @@ namespace QRmenuAPI.Controllers
 
         //[Authorize(Roles = "CompanyAdministrator")]
         [HttpPut("{id}")]
-        //Claim --> Her kullanıcı kendisini ve altındakini güncelleyebilmeli
-        public OkResult PutApplicationUser(ApplicationUser applicationUser)
+        [Authorize(Roles = "Administrator, CompanyAdministrator")]
+        public ActionResult PutApplicationUser(ApplicationUser applicationUser)
         {
+            bool isAdmin = User.IsInRole("Administrator");
             ApplicationUser existingApplicationUser = _signInManager.UserManager.FindByIdAsync(applicationUser.Id).Result;
+            if (isAdmin == true)
+            {
+                
+
+                existingApplicationUser.Email = applicationUser.Email;
+                existingApplicationUser.Name = applicationUser.Name;
+                existingApplicationUser.PhoneNumber = applicationUser.PhoneNumber;
+                existingApplicationUser.StateId = applicationUser.StateId;
+                existingApplicationUser.UserName = applicationUser.UserName;
+                _signInManager.UserManager.UpdateAsync(existingApplicationUser);
+                return Ok("işlem basarılı");
+            }
+            ApplicationUser currentUser = _signInManager.UserManager.GetUserAsync(User).Result;
+            if (User.HasClaim("CompanyId", currentUser.CompanyId.ToString()) == false && currentUser.CompanyId != existingApplicationUser.CompanyId)
+            {
+                return Unauthorized();
+            }
 
             existingApplicationUser.Email = applicationUser.Email;
             existingApplicationUser.Name = applicationUser.Name;
@@ -66,7 +84,7 @@ namespace QRmenuAPI.Controllers
             existingApplicationUser.StateId = applicationUser.StateId;
             existingApplicationUser.UserName = applicationUser.UserName;
             _signInManager.UserManager.UpdateAsync(existingApplicationUser);
-            return Ok();
+            return Ok("işlem basarılı");
         }
 
         [Authorize(Roles = "CompanyAdministrator")]
@@ -77,19 +95,33 @@ namespace QRmenuAPI.Controllers
             return applicationUser.Id;
         }
 
-        [Authorize(Roles = "CompanyAdministrator")]
+        [Authorize(Roles = "Administrator,CompanyAdministrator")]
         [HttpDelete("{id}")]
         public ActionResult DeleteApplicationUser(string id)
         {
+            bool isCan;
             ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(id).Result;
 
             if (applicationUser == null)
             {
                 return NotFound();
             }
+            isCan = User.IsInRole("Administrator");
+            if(isCan == true)
+            {
+                applicationUser.StateId = 0;
+                _signInManager.UserManager.UpdateAsync(applicationUser);
+                return Ok();
+            }
+            ApplicationUser currentUser = _signInManager.UserManager.GetUserAsync(User).Result;
+            if (User.HasClaim("CompanyId", currentUser.CompanyId.ToString()) == false && currentUser.CompanyId != applicationUser.CompanyId)
+            {
+                return Unauthorized();
+            }
             applicationUser.StateId = 0;
             _signInManager.UserManager.UpdateAsync(applicationUser);
             return Ok();
+
         }
 
         private bool ApplicationUserExists(string id)

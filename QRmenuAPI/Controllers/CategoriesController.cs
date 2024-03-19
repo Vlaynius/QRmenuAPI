@@ -1,5 +1,5 @@
 ﻿using System;
-
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QRmenuAPI.Data;
@@ -20,6 +20,7 @@ namespace QRmenuAPI.Controllers
 
         // GET: api/Categories
         [HttpGet]
+        [Authorize(Roles = "Administrator")]
         public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
         {
             if (_context.Categories == null)
@@ -38,6 +39,7 @@ namespace QRmenuAPI.Controllers
                 return NotFound();
             }
             var category = await _context.Categories.FindAsync(id);
+           
 
             if (category == null)
             {
