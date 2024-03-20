@@ -25,7 +25,32 @@ namespace QRmenuAPI.Controllers
             _userManager = userManager;
         }
 
-      
+        [HttpGet("RestaurantMenu")]
+        public string RestaurantMenu(int id)
+        {
+            var Menu = "MENU\n";
+            List<Category> category = _context.Categories!.Where(c => c.RestaurantId == id).ToList();
+            foreach (Category cat in category)
+            {
+                Menu += cat.Name + "\n";
+                List<Food> foods = _context.Foods!.Where(f => f.CategoryId == cat.Id).ToList();
+                foreach (Food food in foods)
+                {
+                    if (food.StateId == 1)
+                    {
+                        Menu += food.Name + "\n";
+                        Menu += food.Price + "\n";
+                        if (food.Description != null)
+                        {
+                            Menu += food.Description + "\n";
+                        }
+                        Menu += "\n\n\n";
+
+                    }
+                }
+            }
+            return Menu;
+        }
 
         // GET: api/Restaurant
         [HttpGet]
