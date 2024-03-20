@@ -12,7 +12,7 @@ using QRmenuAPI.Data;
 namespace QRmenuAPI.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20240319112045_initial")]
+    [Migration("20240320101318_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -492,7 +492,7 @@ namespace QRmenuAPI.Migrations
             modelBuilder.Entity("QRmenuAPI.Models.ApplicationUser", b =>
                 {
                     b.HasOne("QRmenuAPI.Models.Company", "Company")
-                        .WithMany("applicationUsers")
+                        .WithMany()
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -511,7 +511,7 @@ namespace QRmenuAPI.Migrations
             modelBuilder.Entity("QRmenuAPI.Models.Category", b =>
                 {
                     b.HasOne("QRmenuAPI.Models.Restaurant", "Restaurant")
-                        .WithMany("Categories")
+                        .WithMany()
                         .HasForeignKey("RestaurantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -541,7 +541,7 @@ namespace QRmenuAPI.Migrations
             modelBuilder.Entity("QRmenuAPI.Models.Food", b =>
                 {
                     b.HasOne("QRmenuAPI.Models.Category", "Category")
-                        .WithMany("Foods")
+                        .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -560,7 +560,7 @@ namespace QRmenuAPI.Migrations
             modelBuilder.Entity("QRmenuAPI.Models.Restaurant", b =>
                 {
                     b.HasOne("QRmenuAPI.Models.Company", "Company")
-                        .WithMany("Restaurants")
+                        .WithMany()
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -593,23 +593,6 @@ namespace QRmenuAPI.Migrations
                     b.Navigation("ApplicationUser");
 
                     b.Navigation("Restaurant");
-                });
-
-            modelBuilder.Entity("QRmenuAPI.Models.Category", b =>
-                {
-                    b.Navigation("Foods");
-                });
-
-            modelBuilder.Entity("QRmenuAPI.Models.Company", b =>
-                {
-                    b.Navigation("Restaurants");
-
-                    b.Navigation("applicationUsers");
-                });
-
-            modelBuilder.Entity("QRmenuAPI.Models.Restaurant", b =>
-                {
-                    b.Navigation("Categories");
                 });
 #pragma warning restore 612, 618
         }

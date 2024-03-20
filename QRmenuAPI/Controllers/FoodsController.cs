@@ -48,8 +48,6 @@ namespace QRmenuAPI.Controllers
             return food;
         }
 
-
-
         // PUT: api/Foods/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -62,17 +60,11 @@ namespace QRmenuAPI.Controllers
             }
 
             ApplicationUser currentUser = _signInManager.UserManager.GetUserAsync(User).Result;
-            Category? category = _context.Categories.Where(c=>c.Id == food.CategoryId).FirstOrDefault();
-            if (User.HasClaim("RestaurantId", category.RestaurantId.ToString()) == true)
+            Category? category = _context.Categories!.Where(c=>c.Id == food.CategoryId).FirstOrDefault();
+            if (User.HasClaim("RestaurantId", category!.RestaurantId.ToString()) == false)
             {
-            }
-            else
-            {
-                Restaurant? restaurant = _context.Restaurants.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
-                if (User.HasClaim("CompanyId", restaurant.CompanyId.ToString()) == true)
-                {
-                }
-                else
+                Restaurant? restaurant = _context.Restaurants!.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
+                if (User.HasClaim("CompanyId", restaurant!.CompanyId.ToString()) == false)
                 {
                     Unauthorized();
                 }
@@ -107,13 +99,13 @@ namespace QRmenuAPI.Controllers
             {
                 return Problem("Entity set 'ApplicationContext.Foods'  is null.");
             }
-            Category? category = _context.Categories.Where(c => c.Id == food.CategoryId).FirstOrDefault();
+            Category? category = _context.Categories!.Where(c => c.Id == food.CategoryId).FirstOrDefault();
             if(category == null)
             {
                 return Problem("Category that food assigned net found.");
             }
-            Restaurant? restaurant = _context.Restaurants.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
-            if(User.HasClaim("CompanyId", restaurant.CompanyId.ToString()) == false)
+            Restaurant? restaurant = _context.Restaurants!.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
+            if(User.HasClaim("CompanyId", restaurant!.CompanyId.ToString()) == false)
             {
                 if(User.HasClaim("RestaurantId", category.RestaurantId.ToString()) == false)
                 {
@@ -130,18 +122,18 @@ namespace QRmenuAPI.Controllers
         // DELETE: api/Foods/5
         [HttpDelete("{id}")]
         [Authorize(Roles = "CompanyAdministrator, RestaurantAdministrator")]
-        public async Task<IActionResult> DeleteFood(int id)
+        public  ActionResult DeleteFood(int id)
         {
             if (_context.Foods == null)
             {
                 return NotFound();
             }
             Food? food =  _context.Foods.Find(id);
-            Category? category = _context.Categories.Where(c => c.Id == food.CategoryId).FirstOrDefault();
-            Restaurant? restaurant = _context.Restaurants.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
-            if (User.HasClaim("CompanyId", restaurant.CompanyId.ToString()) == false)
+            Category? category = _context.Categories!.Where(c => c.Id == food!.CategoryId).FirstOrDefault();
+            Restaurant? restaurant = _context.Restaurants!.Where(r => r.Id == category!.RestaurantId).FirstOrDefault();
+            if (User.HasClaim("CompanyId", restaurant!.CompanyId.ToString()) == false)
             {
-                if (User.HasClaim("RestaurantId", category.RestaurantId.ToString()) == false)
+                if (User.HasClaim("RestaurantId", category!.RestaurantId.ToString()) == false)
                 {
                     return Unauthorized();
                 }

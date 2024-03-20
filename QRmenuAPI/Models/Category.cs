@@ -25,6 +25,5 @@ namespace QRmenuAPI.Models
         [ForeignKey("StateId")]
         public State? State { get; set; }
 
-        public List<Food>? Foods { get; set; }
     }
 }

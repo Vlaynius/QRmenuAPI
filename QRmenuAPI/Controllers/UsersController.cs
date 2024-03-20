@@ -53,7 +53,6 @@ namespace QRmenuAPI.Controllers
             return applicationUser;
         }
 
-        //[Authorize(Roles = "CompanyAdministrator")]
         [HttpPut("{id}")]
         [Authorize(Roles = "Administrator, CompanyAdministrator")]
         public ActionResult PutApplicationUser(ApplicationUser applicationUser)
@@ -62,8 +61,6 @@ namespace QRmenuAPI.Controllers
             ApplicationUser existingApplicationUser = _signInManager.UserManager.FindByIdAsync(applicationUser.Id).Result;
             if (isAdmin == true)
             {
-                
-
                 existingApplicationUser.Email = applicationUser.Email;
                 existingApplicationUser.Name = applicationUser.Name;
                 existingApplicationUser.PhoneNumber = applicationUser.PhoneNumber;
@@ -77,7 +74,6 @@ namespace QRmenuAPI.Controllers
             {
                 return Unauthorized();
             }
-
             existingApplicationUser.Email = applicationUser.Email;
             existingApplicationUser.Name = applicationUser.Name;
             existingApplicationUser.PhoneNumber = applicationUser.PhoneNumber;
@@ -154,8 +150,6 @@ namespace QRmenuAPI.Controllers
             {
                 return ;//Kullanıcı Yok
             }
-            //var token = await _signInManager.UserManager.GeneratePasswordResetTokenAsync(applicationUser);
-            //var resetPasswordResult = await _signInManager.UserManager.ResetPasswordAsync(applicationUser, token, NewPassword);
             try
             {
 
@@ -167,10 +161,8 @@ namespace QRmenuAPI.Controllers
             {
                 Ok("Bit Hata Oluştu");
             }
-
-
-            //return resetPasswordResult.Succeeded;
         }
+
         [Authorize]
         [HttpPost("ChangePassword")]
         public async Task<bool> ChangePassword(string userName, string currentPassword, string NewPassword)
@@ -195,6 +187,7 @@ namespace QRmenuAPI.Controllers
             }
             return _signInManager.UserManager.GeneratePasswordResetTokenAsync(applicationUser).Result;
         }
+
         [HttpPost("ValidateResetPassword")]
         public ActionResult<string> ValidateResetPassword(string UserName, string token, string newPassword)
         {
@@ -212,20 +205,28 @@ namespace QRmenuAPI.Controllers
             return Ok("Password Reset Successfull");
         }
         
-        //Admin (her kullanıcıya atama yapalilmeli), Company admin(ResAdmin'e atama yapabilmeli)***
-        [HttpPost("AssignRole")]
+        [HttpPost("AssignRestaurantRole")]
         [Authorize(Roles = "CompanyAdministrator")]
         public ActionResult AssignRestaurantRole(string userId , int Companyid)
         {
-            if (User.HasClaim("CompanyId", Companyid.ToString()) == false)
+            ApplicationUser currentUser = _signInManager.UserManager.GetUserAsync(User).Result;
+            ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(userId).Result;
+            if(applicationUser == null)
             {
-                return Unauthorized();
+                return Problem("User Not Found");
+            }
+            if (User.IsInRole("Administrator") == false)
+            {
+                if (User.HasClaim("CompanyId", Companyid.ToString()) == false && currentUser.CompanyId != applicationUser.CompanyId)
+                {
+                    return Unauthorized();
+                }
             }
             try
             {
-                ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(userId).Result;
-                _signInManager.UserManager.AddToRoleAsync(applicationUser, "RestaurantAdministrator");
-            } catch( Exception)
+              _signInManager.UserManager.AddToRoleAsync(applicationUser, "RestaurantAdministrator");
+            }
+            catch( Exception)
             {
                 return Ok("ISLEM SIRASINDA BİR HATA OLUŞTU");
             }

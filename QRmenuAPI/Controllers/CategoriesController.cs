@@ -64,8 +64,8 @@ namespace QRmenuAPI.Controllers
 
             if(User.HasClaim("RestaurantId", category.RestaurantId.ToString()) == false)
             {
-                Restaurant? restaurant = _context.Restaurants.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
-                if(User.HasClaim("CompanyId", restaurant.CompanyId.ToString()) == false)
+                Restaurant? restaurant = _context.Restaurants!.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
+                if(User.HasClaim("CompanyId", restaurant!.CompanyId.ToString()) == false)
                 {
                     return Unauthorized();
                 }
@@ -103,7 +103,7 @@ namespace QRmenuAPI.Controllers
                 return Problem("Entity set 'ApplicationContext.Categories'  is null.");
             }
 
-            Restaurant? restaurant = _context.Restaurants.FindAsync(category.RestaurantId).Result;
+            Restaurant? restaurant = _context.Restaurants!.FindAsync(category.RestaurantId).Result;
             if(restaurant == null)
             {
                 return Problem("Restaurant not found");
@@ -131,14 +131,14 @@ namespace QRmenuAPI.Controllers
                 return NotFound();
             }
 
-            Category? category = _context.Categories!.Where(c => c.Id == id).Include(c => c.Foods).FirstOrDefault();
+            Category? category = _context.Categories!.Where(c => c.Id == id).FirstOrDefault();
 
             if (category != null)
             {
                 return Problem("Category not found");
             }
-            Restaurant? restaurant =  _context.Restaurants.Find(category.RestaurantId);
-            if (User.HasClaim("CompanyId", restaurant.CompanyId.ToString()) == false)
+            Restaurant? restaurant = _context.Restaurants!.Find(category!.RestaurantId);
+            if (User.HasClaim("CompanyId", restaurant!.CompanyId.ToString()) == false)
             {
                 if (User.HasClaim("RestaurantId", restaurant.Id.ToString()) == false)
                 {
@@ -146,11 +146,15 @@ namespace QRmenuAPI.Controllers
                 }
             }
             category.StateId = 0;
-            foreach (Food food in category.Foods!)
+            List<Food> foods = _context.Foods!.Where(f => f.CategoryId == category.Id).ToList();
+            if (foods != null)
             {
-                food.StateId = 0;
+                foreach (Food food in foods)
+                {
+                    food.StateId = 0;
+                }
             }
-            _context.Categories?.Update(category!);
+            _context.Categories?.Update(category);
             _context.SaveChanges();
             return Ok("Silme işlemi Başarılı");
         }

@@ -40,7 +40,7 @@ namespace QRmenuAPI.Models
         [ForeignKey("CompanyId")]
         public Company? Company { get; set; }
 
-        public List<Category>? Categories { get; set; }
+        
     }
 }
 

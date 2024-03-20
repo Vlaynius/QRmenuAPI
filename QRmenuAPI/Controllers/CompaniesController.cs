@@ -73,65 +73,68 @@ namespace QRmenuAPI.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize(Roles = "Administrator")]
         [HttpPost]
-        public int PostCompany(Company company)
+        public string PostCompany(Company company)
         {
             Claim Compclaim;
             ApplicationUser applicationUser = new ApplicationUser();
             _context.Companies!.Add(company);
             _context.SaveChanges();
             applicationUser.CompanyId = company.Id;
-            applicationUser.Email = "abc@def";
+            applicationUser.Email = company.Email;
             applicationUser.Name = company.Name + "Administrator";
-            applicationUser.PhoneNumber = "11122233344";
+            applicationUser.PhoneNumber = company.Phone;
             applicationUser.RegisterDate = DateTime.Today;
             applicationUser.StateId = 1;
             applicationUser.UserName = "CompanyAdministrator" + company.Id.ToString();
             _userManager.CreateAsync(applicationUser).Wait();
             _userManager.AddToRoleAsync(applicationUser, "CompanyAdministrator").Wait();
+            _userManager.AddPasswordAsync(applicationUser, "Admin123!").Wait();
             Compclaim = new Claim("CompanyId", applicationUser.CompanyId.ToString());
             _userManager.AddClaimAsync(applicationUser, Compclaim).Wait();
-
-            return company.Id;
+            string Info = "CompanyId: " + company.Id.ToString() + "\nUserName: " + applicationUser.UserName ;
+            return Info;
         }
 
         // DELETE: api/Companies/5
         [HttpDelete("{id}")]
-        //[Authorize(Roles = "Administrator,CompanyAdministrator")]
         [Authorize(Roles = "Administrator")]
         public ActionResult DeleteCompany(int id)
         {
-
 
             if (_context.Companies == null)
             {
                 return NotFound();
             }
-
-            Company? company = _context.Companies!.Where(c => c.Id == id).Include(c => c.applicationUsers).Include(c => c.Restaurants)!.ThenInclude(c => c.Categories).FirstOrDefault();
+            //Include(c => c.applicationUsers).Include(c => c.Restaurants)!.ThenInclude(c => c.Categories)
+            Company? company = _context.Companies!.Where(c => c.Id == id).FirstOrDefault();
+            List<ApplicationUser>? applicationUser = _userManager.Users.Where(u => u.CompanyId == company!.Id).ToList();
+            List<Restaurant>? restaurants = _context.Restaurants!.Where(r => r.CompanyId == company!.Id).ToList();
             if (company != null)
             {
                 company.StateId = 0;
-                if (company.applicationUsers != null)
+                if (applicationUser != null)
                 {
-                    foreach (ApplicationUser user in company.applicationUsers!)
+                    foreach (ApplicationUser user in applicationUser)
                     {
                         user.StateId = 0;
                     }
                 }
 
-                if (company.Restaurants != null)
+                if (restaurants != null)
                 {
-                    foreach (Restaurant rest in company.Restaurants!)
+                    foreach (Restaurant rest in restaurants)
                     {
                         rest.StateId = 0;
-                        if (rest.Categories != null)
+                        List<Category>? categories = _context.Categories!.Where(c => c.RestaurantId == rest.Id).ToList();
+                        if (categories != null)
                         {
-                            foreach (Category cat in rest.Categories!)
+                            foreach (Category cat in categories)
                             {
                                 cat.StateId = 0;
-                                if (cat.Foods != null)
+                                List<Food> foods = _context.Foods!.Where(f => f.CategoryId == cat.Id).ToList();
+                                if (foods != null)
                                 {
-                                    foreach (Food food in cat.Foods!)
+                                    foreach (Food food in foods)
                                     {
                                         food.StateId = 0;
                                     }
