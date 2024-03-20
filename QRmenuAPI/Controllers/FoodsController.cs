@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QRmenuAPI.Data;
@@ -11,10 +12,11 @@ namespace QRmenuAPI.Controllers
     public class FoodsController : ControllerBase
     {
         private readonly ApplicationContext _context;
-
-        public FoodsController(ApplicationContext context)
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        public FoodsController(ApplicationContext context, SignInManager<ApplicationUser> signInManager)
         {
             _context = context;
+            _signInManager = signInManager;
         }
 
         // GET: api/Foods
@@ -46,22 +48,39 @@ namespace QRmenuAPI.Controllers
             return food;
         }
 
+
+
         // PUT: api/Foods/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        //Claim --> Company Tüm restoranlarını , Restaurant kendi restaurant'larını editleyebilmili
-        public async Task<IActionResult> PutFood(int id, Food food)
+        [Authorize(Roles = "CompanyAdministrator, RestaurantAdministrator")]
+        public ActionResult PutFood(int id, Food food)
         {
             if (id != food.Id)
             {
                 return BadRequest();
             }
 
+            ApplicationUser currentUser = _signInManager.UserManager.GetUserAsync(User).Result;
+            Category? category = _context.Categories.Where(c=>c.Id == food.CategoryId).FirstOrDefault();
+            if (User.HasClaim("RestaurantId", category.RestaurantId.ToString()) == true)
+            {
+            }
+            else
+            {
+                Restaurant? restaurant = _context.Restaurants.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
+                if (User.HasClaim("CompanyId", restaurant.CompanyId.ToString()) == true)
+                {
+                }
+                else
+                {
+                    Unauthorized();
+                }
+            }
             _context.Entry(food).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                 _context.SaveChangesAsync().Wait();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -81,22 +100,36 @@ namespace QRmenuAPI.Controllers
         // POST: api/Foods
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        //Claim --> Company Tüm restoranlarını , Restaurant kendi restaurant'larını editleyebilmili
-        public async Task<ActionResult<Food>> PostFood(Food food)
+        [Authorize(Roles = "CompanyAdministrator, RestaurantAdministrator")]
+        public  ActionResult<Food> PostFood(Food food)
         {
             if (_context.Foods == null)
             {
                 return Problem("Entity set 'ApplicationContext.Foods'  is null.");
             }
+            Category? category = _context.Categories.Where(c => c.Id == food.CategoryId).FirstOrDefault();
+            if(category == null)
+            {
+                return Problem("Category that food assigned net found.");
+            }
+            Restaurant? restaurant = _context.Restaurants.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
+            if(User.HasClaim("CompanyId", restaurant.CompanyId.ToString()) == false)
+            {
+                if(User.HasClaim("RestaurantId", category.RestaurantId.ToString()) == false)
+                {
+                    return Unauthorized();
+                }
+            }
+
             _context.Foods.Add(food);
-            await _context.SaveChangesAsync();
+            _context.SaveChangesAsync().Wait();
 
             return CreatedAtAction("GetFood", new { id = food.Id }, food);
         }
 
         // DELETE: api/Foods/5
         [HttpDelete("{id}")]
-        //Claim --> Company Tüm restoranlarını , Restaurant kendi restaurant'larını editleyebilmili
+        [Authorize(Roles = "CompanyAdministrator, RestaurantAdministrator")]
         public async Task<IActionResult> DeleteFood(int id)
         {
             if (_context.Foods == null)
@@ -104,7 +137,15 @@ namespace QRmenuAPI.Controllers
                 return NotFound();
             }
             Food? food =  _context.Foods.Find(id);
-
+            Category? category = _context.Categories.Where(c => c.Id == food.CategoryId).FirstOrDefault();
+            Restaurant? restaurant = _context.Restaurants.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
+            if (User.HasClaim("CompanyId", restaurant.CompanyId.ToString()) == false)
+            {
+                if (User.HasClaim("RestaurantId", category.RestaurantId.ToString()) == false)
+                {
+                    return Unauthorized();
+                }
+            }
             if ( food != null)
             {
                 food.StateId = 0;

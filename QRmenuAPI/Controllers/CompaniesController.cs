@@ -14,7 +14,7 @@ namespace QRmenuAPI.Controllers
     public class CompaniesController : ControllerBase
     {
         private readonly ApplicationContext _context;
-        private readonly UserManager<ApplicationUser> _userManager ;
+        private readonly UserManager<ApplicationUser> _userManager;
         public CompaniesController(ApplicationContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
@@ -26,10 +26,10 @@ namespace QRmenuAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Company>>> GetCompanies()
         {
-          if (_context.Companies == null)
-          {
-              return NotFound();
-          }
+            if (_context.Companies == null)
+            {
+                return NotFound();
+            }
             return await _context.Companies.ToListAsync();
         }
 
@@ -38,10 +38,10 @@ namespace QRmenuAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Company>> GetCompany(int id)
         {
-          if (_context.Companies == null)
-          {
-              return NotFound();
-          }
+            if (_context.Companies == null)
+            {
+                return NotFound();
+            }
             var company = await _context.Companies.FindAsync(id);
 
             if (company == null)
@@ -56,13 +56,13 @@ namespace QRmenuAPI.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize(Policy = "CompAdmin")]
-        public  ActionResult PutCompany(int id, Company company)
+        public ActionResult PutCompany(int id, Company company)
         {
             if (User.HasClaim("CompanyId", id.ToString()) == false)
             {
                 return Unauthorized();
             }
-            
+
 
             _context.Entry(company).State = EntityState.Modified;
             _context.SaveChanges();
@@ -75,13 +75,13 @@ namespace QRmenuAPI.Controllers
         [HttpPost]
         public int PostCompany(Company company)
         {
-            Claim Compclaim ;
+            Claim Compclaim;
             ApplicationUser applicationUser = new ApplicationUser();
             _context.Companies!.Add(company);
             _context.SaveChanges();
             applicationUser.CompanyId = company.Id;
             applicationUser.Email = "abc@def";
-            applicationUser.Name = company.Name +"Administrator";
+            applicationUser.Name = company.Name + "Administrator";
             applicationUser.PhoneNumber = "11122233344";
             applicationUser.RegisterDate = DateTime.Today;
             applicationUser.StateId = 1;
@@ -90,18 +90,18 @@ namespace QRmenuAPI.Controllers
             _userManager.AddToRoleAsync(applicationUser, "CompanyAdministrator").Wait();
             Compclaim = new Claim("CompanyId", applicationUser.CompanyId.ToString());
             _userManager.AddClaimAsync(applicationUser, Compclaim).Wait();
-            
+
             return company.Id;
         }
 
         // DELETE: api/Companies/5
         [HttpDelete("{id}")]
         //[Authorize(Roles = "Administrator,CompanyAdministrator")]
-        [Authorize(Roles ="Administrator")]
+        [Authorize(Roles = "Administrator")]
         public ActionResult DeleteCompany(int id)
         {
-            
-       
+
+
             if (_context.Companies == null)
             {
                 return NotFound();
@@ -111,7 +111,7 @@ namespace QRmenuAPI.Controllers
             if (company != null)
             {
                 company.StateId = 0;
-                if(company.applicationUsers != null)
+                if (company.applicationUsers != null)
                 {
                     foreach (ApplicationUser user in company.applicationUsers!)
                     {
@@ -119,17 +119,17 @@ namespace QRmenuAPI.Controllers
                     }
                 }
 
-                if(company.Restaurants != null)
+                if (company.Restaurants != null)
                 {
                     foreach (Restaurant rest in company.Restaurants!)
                     {
                         rest.StateId = 0;
-                        if(rest.Categories != null)
+                        if (rest.Categories != null)
                         {
                             foreach (Category cat in rest.Categories!)
                             {
                                 cat.StateId = 0;
-                                if(cat.Foods != null)
+                                if (cat.Foods != null)
                                 {
                                     foreach (Food food in cat.Foods!)
                                     {
@@ -140,13 +140,15 @@ namespace QRmenuAPI.Controllers
                         }
                     }
                 }
-                
+
                 _context.Companies!.Update(company);
             }
             _context.SaveChanges();
 
             return NoContent();
         }
+
+        
 
         private bool CompanyExists(int id)
         {

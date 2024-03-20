@@ -111,7 +111,7 @@ namespace QRmenuAPI.Controllers
             {
                 applicationUser.StateId = 0;
                 _signInManager.UserManager.UpdateAsync(applicationUser);
-                return Ok();
+                return Ok("Kullanıcı Oluşturuldu");
             }
             ApplicationUser currentUser = _signInManager.UserManager.GetUserAsync(User).Result;
             if (User.HasClaim("CompanyId", currentUser.CompanyId.ToString()) == false && currentUser.CompanyId != applicationUser.CompanyId)
@@ -120,7 +120,7 @@ namespace QRmenuAPI.Controllers
             }
             applicationUser.StateId = 0;
             _signInManager.UserManager.UpdateAsync(applicationUser);
-            return Ok();
+            return Ok("Kullanıcı Oluşturuldu");
 
         }
 

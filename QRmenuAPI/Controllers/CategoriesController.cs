@@ -55,31 +55,22 @@ namespace QRmenuAPI.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize(Roles = "CompanyAdministrator, RestaurantAdministrator")]
-        //Claim --> Company Tüm restoranlarını , Restaurant kendi restaurant'larını editleyebilmili
         public ActionResult PutCategory(int id, Category category)
         {
             if (id != category.Id)
             {
                 return BadRequest();
             }
-            ApplicationUser currentUser = _signInManager.UserManager.GetUserAsync(User).Result;
-            if(User.HasClaim("RestaurantId", category.RestaurantId.ToString()))
+
+            if(User.HasClaim("RestaurantId", category.RestaurantId.ToString()) == false)
             {
-
-            }
-            else
-            {
-                var restaurant = _context.Restaurants.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
-                if (User.HasClaim("CompanyId", restaurant.CompanyId.ToString()))
+                Restaurant? restaurant = _context.Restaurants.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
+                if(User.HasClaim("CompanyId", restaurant.CompanyId.ToString()) == false)
                 {
-
+                    return Unauthorized();
                 }
-                else
-                {
-                    Unauthorized();
-                }
-
             }
+            
             _context.Entry(category).State = EntityState.Modified;
 
             try
@@ -104,40 +95,64 @@ namespace QRmenuAPI.Controllers
         // POST: api/Categories
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        //Claim --> Company Tüm restoranlarını , Restaurant kendi restaurant'larını editleyebilmili
-        public async Task<ActionResult<Category>> PostCategory(Category category)
+        [Authorize(Roles = "CompanyAdministrator , RestaurantAdministrator")]
+        public  ActionResult<Category> PostCategory(Category category)
         {
             if (_context.Categories == null)
             {
                 return Problem("Entity set 'ApplicationContext.Categories'  is null.");
             }
+
+            Restaurant? restaurant = _context.Restaurants.FindAsync(category.RestaurantId).Result;
+            if(restaurant == null)
+            {
+                return Problem("Restaurant not found");
+            }
+            if(User.HasClaim("CompAdmin", restaurant.CompanyId.ToString()) == false )
+            {
+                if (User.HasClaim("RestaurantId", category.RestaurantId.ToString()) == false)
+                {
+                    return Unauthorized();
+                }
+            }
             _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
+            _context.SaveChangesAsync().Wait();
 
             return CreatedAtAction("GetCategory", new { id = category.Id }, category);
         }
 
         // DELETE: api/Categories/5
         [HttpDelete("{id}")]
-        //Claim --> Company Tüm restoranlarını , Restaurant kendi restaurant'larını editleyebilmili
+        [Authorize(Roles = "CompanyAdministrator , RestaurantAdministrator")]
         public ActionResult DeleteCategory(int id)
         {
             if (_context.Categories == null)
             {
                 return NotFound();
             }
+
             Category? category = _context.Categories!.Where(c => c.Id == id).Include(c => c.Foods).FirstOrDefault();
+
             if (category != null)
             {
-                category.StateId = 0;
-                foreach (Food food in category.Foods!)
+                return Problem("Category not found");
+            }
+            Restaurant? restaurant =  _context.Restaurants.Find(category.RestaurantId);
+            if (User.HasClaim("CompanyId", restaurant.CompanyId.ToString()) == false)
+            {
+                if (User.HasClaim("RestaurantId", restaurant.Id.ToString()) == false)
                 {
-                    food.StateId = 0;
+                    return Unauthorized();
                 }
+            }
+            category.StateId = 0;
+            foreach (Food food in category.Foods!)
+            {
+                food.StateId = 0;
             }
             _context.Categories?.Update(category!);
             _context.SaveChanges();
-            return NoContent();
+            return Ok("Silme işlemi Başarılı");
         }
 
         private bool CategoryExists(int id)

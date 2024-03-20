@@ -58,23 +58,23 @@ namespace QRmenuAPI.Controllers
         // PUT: api/Restaurant/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        [Authorize(Policy = "RestAdmin , CompAdmin")]
+        [Authorize(Roles = "CompanyAdministrator, RestaurantAdministrator")]
         public ActionResult PutRestaurant(int id, Restaurant restaurant)
         {
-            if (User.HasClaim("RestaurantId", id.ToString()) == false)
+            if (User.HasClaim("RestaurantId", id.ToString()) == true)
             {
-                return Unauthorized();
+                _context.Entry(restaurant).State = EntityState.Modified;
+                _context.SaveChanges();
+                return Ok("Güncelleme Başarılı");
             }
 
             if(User.HasClaim("CompanyId", restaurant.CompanyId.ToString())== false)
             {
                 return Unauthorized();
             }
-
-
             _context.Entry(restaurant).State = EntityState.Modified;
             _context.SaveChanges();
-            return Ok();
+            return Ok("Güncelleme Başarılı");
         }
 
         // POST: api/Restaurant
