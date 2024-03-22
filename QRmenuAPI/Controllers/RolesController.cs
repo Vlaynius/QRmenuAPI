@@ -25,7 +25,7 @@ namespace QRmenuAPI.Controllers
 
         // GET: api/Roles
         [Authorize(Roles = "Administrator")]
-        [HttpGet]
+        [HttpGet("GetApplicationRole")]
         public async Task<ActionResult<IEnumerable<IdentityRole>>> GetApplicationRole()
         {
             if (_roleManager == null)
@@ -38,7 +38,7 @@ namespace QRmenuAPI.Controllers
         // POST: api/Roles
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize(Roles = "Administrator")]
-        [HttpPost]
+        [HttpPost("PostApplicationRole")]
         public void PostApplicationRole(string name)
         {
             IdentityRole applicationRole = new IdentityRole(name);

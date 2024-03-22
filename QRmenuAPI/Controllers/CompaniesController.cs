@@ -23,7 +23,7 @@ namespace QRmenuAPI.Controllers
 
         // GET: api/Companies
         [Authorize(Roles = "Administrator")]
-        [HttpGet]
+        [HttpGet("GetCompanies")]
         public async Task<ActionResult<IEnumerable<Company>>> GetCompanies()
         {
             if (_context.Companies == null)
@@ -35,7 +35,7 @@ namespace QRmenuAPI.Controllers
 
         // GET: api/Companies/5
         [Authorize]
-        [HttpGet("{id}")]
+        [HttpGet("GetCompany")]
         public async Task<ActionResult<Company>> GetCompany(int id)
         {
             ApplicationUser currentUser = _userManager.GetUserAsync(User).Result;
@@ -58,7 +58,7 @@ namespace QRmenuAPI.Controllers
 
         // PUT: api/Companies/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut("PutCompany")]
         [Authorize(Policy = "CompAdmin")]
         public ActionResult PutCompany(int id, Company company)
         {
@@ -74,7 +74,7 @@ namespace QRmenuAPI.Controllers
         // POST: api/Companies
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize(Roles = "Administrator")]
-        [HttpPost]
+        [HttpPost("PostCompany")]
         public string PostCompany(Company company)
         {
             Claim Compclaim;
@@ -98,7 +98,7 @@ namespace QRmenuAPI.Controllers
         }
 
         // DELETE: api/Companies/5
-        [HttpDelete("{id}")]
+        [HttpDelete("DeleteCompany")]
         [Authorize(Roles = "Administrator")]
         public ActionResult DeleteCompany(int id)
         {

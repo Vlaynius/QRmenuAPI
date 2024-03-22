@@ -23,16 +23,16 @@ namespace QRmenuAPI.Controllers
             _roleManager = roleManager;
             _signInManager = signInManager;
         }
-        
+
         // GET: api/Users
         [HttpGet]
         [Authorize(Roles = "Administrator")]
         public async Task<ActionResult<IEnumerable<ApplicationUser>>> GetUsers()
         {
-          if (_context.Users == null)
-          {
-              return NotFound();
-          }
+            if (_context.Users == null)
+            {
+                return NotFound();
+            }
             return await _signInManager.UserManager.Users.ToListAsync();
         }
 
@@ -49,7 +49,7 @@ namespace QRmenuAPI.Controllers
             return applicationUser;
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("PutApplicationUser")]
         [Authorize(Roles = "Administrator, CompanyAdministrator")]
         public ActionResult<string> PutApplicationUser(ApplicationUser applicationUser)
         {
@@ -80,7 +80,7 @@ namespace QRmenuAPI.Controllers
         }
 
         [Authorize(Roles = "CompanyAdministrator")]
-        [HttpPost]
+        [HttpPost("PostApplicationUser")]
         public string PostApplicationUser(ApplicationUser applicationUser, string passWord)
         {
             _signInManager.UserManager.CreateAsync(applicationUser, passWord).Wait();
@@ -88,7 +88,7 @@ namespace QRmenuAPI.Controllers
         }
 
         [Authorize(Roles = "Administrator,CompanyAdministrator")]
-        [HttpDelete("{id}")]
+        [HttpDelete("DeleteApplicationUser")]
         public ActionResult<string> DeleteApplicationUser(string id)
         {
             bool isAdmin = false;
@@ -137,12 +137,6 @@ namespace QRmenuAPI.Controllers
             {
                 return Problem("Invalid UserName or Password");
             }
-            Activate(user);
-            return Ok("Successfull");
-        }
-
-        public bool Activate(ApplicationUser user)
-        {
             try
             {
                 user.StateId = 1;
@@ -150,10 +144,25 @@ namespace QRmenuAPI.Controllers
             }
             catch (Exception)
             {
-                return false;
+                return Problem();
             }
-            return true;
+            
+            return Ok("Successfull");
         }
+
+        //public bool Activate(ApplicationUser user)
+        //{
+        //    try
+        //    {
+        //        user.StateId = 1;
+        //        _signInManager.UserManager.UpdateAsync(user);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return false;
+        //    }
+        //    return true;
+        //}
 
         [Authorize(Roles = "Administrator")]
         [HttpPost("ForgetPassword")]
