@@ -44,7 +44,6 @@ namespace QRmenuAPI.Controllers
             {
                 return NotFound();
             }
-
             return food;
         }
 
@@ -58,7 +57,6 @@ namespace QRmenuAPI.Controllers
             {
                 return BadRequest();
             }
-
             ApplicationUser currentUser = _signInManager.UserManager.GetUserAsync(User).Result;
             Category? category = _context.Categories!.Where(c=>c.Id == food.CategoryId).FirstOrDefault();
             if (User.HasClaim("RestaurantId", category!.RestaurantId.ToString()) == false)
@@ -85,7 +83,6 @@ namespace QRmenuAPI.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
@@ -112,10 +109,8 @@ namespace QRmenuAPI.Controllers
                     return Unauthorized();
                 }
             }
-
             _context.Foods.Add(food);
             _context.SaveChangesAsync().Wait();
-
             return CreatedAtAction("GetFood", new { id = food.Id }, food);
         }
 
@@ -142,7 +137,6 @@ namespace QRmenuAPI.Controllers
             {
                 food.StateId = 0;
             }
-
             return NoContent();
         }
 

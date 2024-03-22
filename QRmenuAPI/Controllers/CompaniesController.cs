@@ -38,6 +38,11 @@ namespace QRmenuAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Company>> GetCompany(int id)
         {
+            ApplicationUser currentUser = _userManager.GetUserAsync(User).Result;
+            if (currentUser.CompanyId != id)
+            {
+                return Unauthorized();
+            }
             if (_context.Companies == null)
             {
                 return NotFound();
@@ -48,7 +53,6 @@ namespace QRmenuAPI.Controllers
             {
                 return NotFound();
             }
-
             return company;
         }
 
@@ -62,8 +66,6 @@ namespace QRmenuAPI.Controllers
             {
                 return Unauthorized();
             }
-
-
             _context.Entry(company).State = EntityState.Modified;
             _context.SaveChanges();
             return Ok();
@@ -100,7 +102,6 @@ namespace QRmenuAPI.Controllers
         [Authorize(Roles = "Administrator")]
         public ActionResult DeleteCompany(int id)
         {
-
             if (_context.Companies == null)
             {
                 return NotFound();
@@ -119,7 +120,6 @@ namespace QRmenuAPI.Controllers
                         user.StateId = 0;
                     }
                 }
-
                 if (restaurants != null)
                 {
                     foreach (Restaurant rest in restaurants)
@@ -143,15 +143,11 @@ namespace QRmenuAPI.Controllers
                         }
                     }
                 }
-
                 _context.Companies!.Update(company);
             }
             _context.SaveChanges();
-
             return NoContent();
         }
-
-        
 
         private bool CompanyExists(int id)
         {

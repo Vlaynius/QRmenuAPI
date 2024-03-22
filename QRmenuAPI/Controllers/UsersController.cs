@@ -23,7 +23,7 @@ namespace QRmenuAPI.Controllers
             _roleManager = roleManager;
             _signInManager = signInManager;
         }
-
+        
         // GET: api/Users
         [HttpGet]
         [Authorize(Roles = "Administrator")]
@@ -34,7 +34,6 @@ namespace QRmenuAPI.Controllers
               return NotFound();
           }
             return await _signInManager.UserManager.Users.ToListAsync();
-
         }
 
         // GET: api/Users/5
@@ -42,20 +41,17 @@ namespace QRmenuAPI.Controllers
         [Authorize(Roles = "Administrator")]
         public async Task<ActionResult<ApplicationUser>> GetApplicationUser(string id)
         {
-          
             var applicationUser = await _signInManager.UserManager.FindByIdAsync(id);
-
             if (applicationUser == null)
             {
                 return NotFound();
             }
-
             return applicationUser;
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Administrator, CompanyAdministrator")]
-        public ActionResult PutApplicationUser(ApplicationUser applicationUser)
+        public ActionResult<string> PutApplicationUser(ApplicationUser applicationUser)
         {
             bool isAdmin = User.IsInRole("Administrator");
             ApplicationUser existingApplicationUser = _signInManager.UserManager.FindByIdAsync(applicationUser.Id).Result;
@@ -67,7 +63,7 @@ namespace QRmenuAPI.Controllers
                 existingApplicationUser.StateId = applicationUser.StateId;
                 existingApplicationUser.UserName = applicationUser.UserName;
                 _signInManager.UserManager.UpdateAsync(existingApplicationUser);
-                return Ok("işlem basarılı");
+                return Ok("Successfull");
             }
             ApplicationUser currentUser = _signInManager.UserManager.GetUserAsync(User).Result;
             if (User.HasClaim("CompanyId", currentUser.CompanyId.ToString()) == false && currentUser.CompanyId != existingApplicationUser.CompanyId)
@@ -80,7 +76,7 @@ namespace QRmenuAPI.Controllers
             existingApplicationUser.StateId = applicationUser.StateId;
             existingApplicationUser.UserName = applicationUser.UserName;
             _signInManager.UserManager.UpdateAsync(existingApplicationUser);
-            return Ok("işlem basarılı");
+            return Ok("Successfull");
         }
 
         [Authorize(Roles = "CompanyAdministrator")]
@@ -93,7 +89,7 @@ namespace QRmenuAPI.Controllers
 
         [Authorize(Roles = "Administrator,CompanyAdministrator")]
         [HttpDelete("{id}")]
-        public ActionResult DeleteApplicationUser(string id)
+        public ActionResult<string> DeleteApplicationUser(string id)
         {
             bool isAdmin = false;
             ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(id).Result;
@@ -107,16 +103,16 @@ namespace QRmenuAPI.Controllers
             {
                 applicationUser.StateId = 0;
                 _signInManager.UserManager.UpdateAsync(applicationUser);
-                return Ok("Kullanıcı Oluşturuldu");
+                return Ok("User Created");
             }
             ApplicationUser currentUser = _signInManager.UserManager.GetUserAsync(User).Result;
-            if (User.HasClaim("CompanyId", currentUser.CompanyId.ToString()) == false && currentUser.CompanyId != applicationUser.CompanyId)
+            if (User.HasClaim("CompanyId", currentUser.CompanyId.ToString()) == false || currentUser.CompanyId != applicationUser.CompanyId)
             {
                 return Unauthorized();
             }
             applicationUser.StateId = 0;
             _signInManager.UserManager.UpdateAsync(applicationUser);
-            return Ok("Kullanıcı Oluşturuldu");
+            return Ok("User Created");
 
         }
 
@@ -127,40 +123,57 @@ namespace QRmenuAPI.Controllers
 
         //LogIn
         [HttpPost("LogIn")]
-        public bool LogIn(string userName, string password)
+        public ActionResult<string> LogIn(string userName, string password)
         {
             
             ApplicationUser user =  _signInManager.UserManager.FindByNameAsync(userName).Result;
-            if (user == null)
+            if (user == null || user.StateId != 1)
             {
-                return false; //false
+                return Problem(); //Kullanıcı 
             }
-            Microsoft.AspNetCore.Identity.SignInResult signInResult =
-                _signInManager.PasswordSignInAsync(user, password, false, false).Result;
-            
-            return signInResult.Succeeded;
+            Microsoft.AspNetCore.Identity.SignInResult signInResult = _signInManager.PasswordSignInAsync(user, password, false, false).Result;
+            bool sonuc = signInResult.Succeeded;
+            if(sonuc != true)
+            {
+                return Problem("Invalid UserName or Password");
+            }
+            Activate(user);
+            return Ok("Successfull");
+        }
+
+        public bool Activate(ApplicationUser user)
+        {
+            try
+            {
+                user.StateId = 1;
+                _signInManager.UserManager.UpdateAsync(user);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
         }
 
         [Authorize(Roles = "Administrator")]
         [HttpPost("ForgetPassword")]
-        public  void ForgetPassword(string userName, string NewPassword)
+        public ActionResult<string> ForgetPassword(string userName, string NewPassword)
         {
             ApplicationUser applicationUser = _signInManager.UserManager.FindByNameAsync(userName).Result;
-            if(User == null)
+            if(applicationUser == null)
             {
-                return ;//Kullanıcı Yok
+                return Problem();//Kullanıcı Yok
             }
             try
             {
-
                 _signInManager.UserManager.RemovePasswordAsync(applicationUser).Wait();
                 _signInManager.UserManager.AddPasswordAsync(applicationUser, NewPassword).Wait();
-
             }
             catch (Exception)
             {
-                Ok("Bit Hata Oluştu");
+                return Ok("An Error Accured");
             }
+            return Ok("Password Assigned Successfully");
         }
 
         [Authorize]
@@ -205,32 +218,48 @@ namespace QRmenuAPI.Controllers
             return Ok("Password Reset Successfull");
         }
         
-        [HttpPost("AssignRestaurantRole")]
-        [Authorize(Roles = "CompanyAdministrator")]
-        public ActionResult AssignRestaurantRole(string userId , int Companyid)
+        [HttpPut("ActivateUser")]
+        [Authorize(Roles = "Administrator")]
+        public ActionResult<string> ActivateUser(string userId)
         {
-            ApplicationUser currentUser = _signInManager.UserManager.GetUserAsync(User).Result;
             ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(userId).Result;
             if(applicationUser == null)
             {
                 return Problem("User Not Found");
             }
-            if (User.IsInRole("Administrator") == false)
+
+            _signInManager.UserManager.UpdateAsync(applicationUser);
+            return Ok("User Set to Active");
+        }
+
+        [HttpPut("PassifyUser")]
+        [Authorize]
+        public ActionResult<string> PassifyUser(string password)
+        {
+            ApplicationUser currentUser = _signInManager.UserManager.GetUserAsync(User).Result;
+            bool result = _signInManager.UserManager.CheckPasswordAsync(currentUser, password).Result;
+            if (result != true)
             {
-                if (User.HasClaim("CompanyId", Companyid.ToString()) == false && currentUser.CompanyId != applicationUser.CompanyId)
-                {
-                    return Unauthorized();
-                }
+                return Unauthorized();
             }
+            currentUser.StateId = 2;
+            _signInManager.UserManager.UpdateAsync(currentUser);
+            return Ok("User Set to Passive");
+        }
+
+        [HttpGet("LogOut")]
+        [Authorize]
+        public ActionResult<string> LogOut()
+        {
             try
             {
-              _signInManager.UserManager.AddToRoleAsync(applicationUser, "RestaurantAdministrator");
+                _signInManager.SignOutAsync().Wait();
             }
-            catch( Exception)
+            catch (Exception)
             {
-                return Ok("ISLEM SIRASINDA BİR HATA OLUŞTU");
+                return Problem();
             }
-            return Ok("ROL ATAMA BAŞARILI");
+            return Ok("Logged Out");
         }
     }
 }

@@ -25,43 +25,15 @@ namespace QRmenuAPI.Controllers
             _userManager = userManager;
         }
 
-        //[HttpGet("RestaurantMenu")]
-        //public string RestaurantMenu(int id)
-        //{
-        //    var Menu = "MENU\n";
-        //    List<Category> category = _context.Categories!.Where(c => c.RestaurantId == id).ToList();
-        //    foreach (Category cat in category)
-        //    {
-        //        Menu += cat.Name + "\n";
-        //        List<Food> foods = _context.Foods!.Where(f => f.CategoryId == cat.Id).ToList();
-        //        foreach (Food food in foods)
-        //        {
-        //            if (food.StateId == 1)
-        //            {
-        //                Menu += "Ürün İsmi: "+ food.Name + "\n";
-        //                Menu += "Price: " + food.Price + "TL\n";
-        //                if (food.Description != null)
-        //                {
-        //                    Menu += food.Description + "\n";
-        //                }
-        //                Menu += "\n\n\n";
-
-        //            }
-        //        }
-        //    }
-        //    return Menu;
-        //}
-
         // GET: api/Restaurant
         [HttpGet]
         [Authorize]
         public async Task<ActionResult<IEnumerable<Restaurant>>> GetRestaurant()
         {
-          
-          if (_context.Restaurants == null)
-          {
-              return NotFound();
-          }
+        if (_context.Restaurants == null)
+        {
+            return NotFound();
+        }
             return await _context.Restaurants.ToListAsync();
         }
 
@@ -78,7 +50,6 @@ namespace QRmenuAPI.Controllers
             {
                 return NotFound();
             }
-
             return restaurant;
         }
 
@@ -94,7 +65,6 @@ namespace QRmenuAPI.Controllers
                 _context.SaveChanges();
                 return Ok("Güncelleme Başarılı");
             }
-
             if(User.HasClaim("CompanyId", restaurant.CompanyId.ToString())== false)
             {
                 return Unauthorized();
@@ -126,7 +96,6 @@ namespace QRmenuAPI.Controllers
             _userManager.AddToRoleAsync(applicationUser, "RestaurantAdministrator").Wait(); //Restaurant admin'e claim ver
             claim = new Claim("RestaurantId", restaurant.Id.ToString());
             _userManager.AddClaimAsync(applicationUser, claim).Wait();
-
             var appUser = _context.Users.Where(c => c.CompanyId == restaurant.CompanyId).FirstOrDefault();
             _userManager.AddClaimAsync(appUser!, claim);    //Company admin'e claim ver
             string Info = "RestaurantId: " + restaurant.Id + "\nUserName: " + applicationUser.UserName  ;
@@ -142,18 +111,15 @@ namespace QRmenuAPI.Controllers
             {
                 return NotFound();
             }
-
             Restaurant? restaurant = _context.Restaurants.Where(r => r.Id == id).FirstOrDefault();
             if (restaurant == null)
             {
                 return NotFound();
             }
-
             if (User.HasClaim("CompanyId", restaurant.CompanyId.ToString()) == false)
             {
                 return Unauthorized();
             }
-
             restaurant.StateId = 0;
             List<Category>? categories = _context.Categories!.Where(c => c.RestaurantId == restaurant.Id).ToList();
             if (categories != null)
@@ -173,7 +139,6 @@ namespace QRmenuAPI.Controllers
             }
             _context.Restaurants.Update(restaurant);
             _context.SaveChanges();
-            
             return NoContent();
         }
 

@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,107 +15,173 @@ namespace QRmenuAPI.Controllers
     {
         private readonly ApplicationContext _context;
         private readonly RoleManager<IdentityRole> _roleManager;
-        public RolesController(ApplicationContext context, RoleManager<IdentityRole> roleManager)
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        public RolesController( RoleManager<IdentityRole> roleManager, SignInManager<ApplicationUser> signInManager, ApplicationContext context)
         {
-            _roleManager = roleManager;
             _context = context;
+            _roleManager = roleManager;
+            _signInManager = signInManager;
         }
 
-        //// GET: api/Roles
-        //[HttpGet]
-        //public async Task<ActionResult<IEnumerable<ApplicationRole>>> GetApplicationRole()
-        //{
-        //  if (_context.ApplicationRole == null)
-        //  {
-        //      return NotFound();
-        //  }
-        //    return await _context.ApplicationRole.ToListAsync();
-        //}
-
-        //// GET: api/Roles/5
-        //[HttpGet("{id}")]
-        //public async Task<ActionResult<ApplicationRole>> GetApplicationRole(string id)
-        //{
-        //  if (_context.ApplicationRole == null)
-        //  {
-        //      return NotFound();
-        //  }
-        //    var applicationRole = await _context.ApplicationRole.FindAsync(id);
-
-        //    if (applicationRole == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return applicationRole;
-        //}
-
-        //// PUT: api/Roles/5
-        //// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> PutApplicationRole(string id, ApplicationRole applicationRole)
-        //{
-        //    if (id != applicationRole.Id)
-        //    {
-        //        return BadRequest();
-        //    }
-
-        //    _context.Entry(applicationRole).State = EntityState.Modified;
-
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        if (!ApplicationRoleExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-
-        //    return NoContent();
-        //}
+        // GET: api/Roles
+        [Authorize(Roles = "Administrator")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<IdentityRole>>> GetApplicationRole()
+        {
+            if (_roleManager == null)
+            {
+                return NotFound();
+            }
+            return await _roleManager.Roles.ToListAsync();
+        }
 
         // POST: api/Roles
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-
         [Authorize(Roles = "Administrator")]
         [HttpPost]
         public void PostApplicationRole(string name)
         {
-
             IdentityRole applicationRole = new IdentityRole(name);
             _roleManager.CreateAsync(applicationRole).Wait();
         }
 
-        //// DELETE: api/Roles/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteApplicationRole(string id)
-        //{
-        //    if (_context.ApplicationRole == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    var applicationRole = await _context.ApplicationRole.FindAsync(id);
-        //    if (applicationRole == null)
-        //    {
-        //        return NotFound();
-        //    }
+        [HttpPost("AssignRestaurantAdminRole")]
+        [Authorize(Roles = "Administrator,CompanyAdministrator")]
+        public ActionResult<string> AssignRestaurantAdminRole(string userId, int Companyid)
+        {
+            ApplicationUser currentUser = _signInManager.UserManager.GetUserAsync(User).Result;
+            ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(userId).Result;
+            if (applicationUser == null)
+            {
+                return Problem("User Not Found");
+            }
+            if (User.IsInRole("Administrator") == false)
+            {
+                if (User.HasClaim("CompanyId", Companyid.ToString()) == false && currentUser.CompanyId != applicationUser.CompanyId)
+                {
+                    return Unauthorized();
+                }
+            }
+            try
+            {
+                _signInManager.UserManager.AddToRoleAsync(applicationUser, "RestaurantAdministrator");
+            }
+            catch (Exception)
+            {
+                return Ok("An Error Accured");
+            }
+            return Ok("RestaurantAdmin Role Assigned to User");
+        }
 
-        //    _context.ApplicationRole.Remove(applicationRole);
-        //    await _context.SaveChangesAsync();
+        [HttpPost("AssignCompanyAdminRole")]
+        [Authorize(Roles = "Administrator")]
+        public ActionResult<string> AssignCompanyAdminRole(string userId)
+        {
+            ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(userId).Result;
+            if (applicationUser == null)
+            {
+                return Problem("User Not Found");
+            }
+            try
+            {
+                _signInManager.UserManager.AddToRoleAsync(applicationUser, "CompanyAdministrator");
+            }
+            catch (Exception)
+            {
+                return Ok("AN ERROR ACCURED");
+            }
+            return Ok("CompanyAdmin Role Assigned to User Successfully.");
+        }
 
-        //    return NoContent();
-        //}
+        [HttpPost("AssignCompanyClaim")]
+        [Authorize(Roles = "Administrator")]
+        public ActionResult<string> AssignCompanyClaim( string userId)
+        {
+            ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(userId).Result;
+            if (applicationUser == null)
+            {
+                return Problem("User Not Found");
+            }
+            Claim Compclaim = new Claim("CompanyId", applicationUser.CompanyId.ToString());
+            _signInManager.UserManager.AddClaimAsync(applicationUser, Compclaim).Wait();
+            return Ok("CompClaim Assign to User");
+        }
 
-        //private bool ApplicationRoleExists(string id)
-        //{
-        //    return (_context.ApplicationRole?.Any(e => e.Id == id)).GetValueOrDefault();
-        //}
+        [HttpPost("AssignRestaurantClaim")]
+        [Authorize(Roles = "Administrator, CompanyAdministrator")]
+        public ActionResult<string> AssignRestaurantClaim(string userId, int restaurantId)
+        {   
+            ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(userId).Result;
+            Restaurant? restaurant = _context.Restaurants!.Where(r => r.Id == restaurantId).FirstOrDefault();
+            if(User.IsInRole("Administrator") == false)
+            {
+                if(User.HasClaim("CompanyId", restaurant!.CompanyId.ToString()) == false)
+                {
+                    return Unauthorized();
+                }
+            }
+            if (applicationUser == null || restaurant == null)
+            {
+                return Problem();
+            }
+            if (restaurant.CompanyId != applicationUser.CompanyId)
+            {
+                return Unauthorized(); 
+            }
+            Claim Restclaim = new Claim("RestaurantId", restaurantId.ToString());
+            _signInManager.UserManager.AddClaimAsync(applicationUser, Restclaim).Wait();
+            return Ok("RestClaim Assign to User");
+        }
+
+        [HttpDelete("DeleteRole")]
+        [Authorize(Roles = "Administrator, CompanyAdministrator")]
+        public ActionResult<string> DeleteRole(string RoleId, string userId)
+        {
+            ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(userId).Result;
+            if (applicationUser == null)
+            {
+                return Problem("User Not Found");
+            }
+            IdentityRole? role = _roleManager.FindByIdAsync(RoleId).Result;
+            if (_roleManager.RoleExistsAsync(role.Name).Result == false)
+            {
+                return Problem("Role Not Found");
+            }
+            if (User.IsInRole("Administrator") == false)
+            {
+                if (User.HasClaim("CompanyId", applicationUser.CompanyId.ToString()) == false || role.Name.Equals("RestaurantAdministrator") == false )
+                {
+                    return Unauthorized();
+                }
+            }
+            try
+            {
+                _signInManager.UserManager.RemoveFromRoleAsync(applicationUser, role.Name).Wait();
+            }
+            catch (Exception)
+            {
+                return NoContent();
+            }
+            return Ok("Role Deleted From User");
+        }
+
+        [HttpDelete("DeleteClaim")]
+        [Authorize(Roles = "Administrator, CompanyAdministrator")]
+        public ActionResult<string> DeleteClaim(string ClaimType, string UserId)
+        {
+            ApplicationUser applicationUser = _signInManager.UserManager.FindByIdAsync(UserId).Result;
+            if (applicationUser == null)
+            {
+                return Problem("User Not Found");
+            }
+            Claim? claim = _signInManager.UserManager.GetClaimsAsync(applicationUser).Result.FirstOrDefault();
+           
+            if(claim == null)
+            {
+                return NotFound();
+            }
+            _signInManager.UserManager.RemoveClaimAsync(applicationUser, claim).Wait();
+            return Ok("Claim Deleted");
+        }
     }
 }

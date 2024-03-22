@@ -41,13 +41,10 @@ namespace QRmenuAPI.Controllers
                 return NotFound();
             }
             var category = await _context.Categories.FindAsync(id);
-           
-
             if (category == null)
             {
                 return NotFound();
             }
-
             return category;
         }
 
@@ -61,7 +58,6 @@ namespace QRmenuAPI.Controllers
             {
                 return BadRequest();
             }
-
             if(User.HasClaim("RestaurantId", category.RestaurantId.ToString()) == false)
             {
                 Restaurant? restaurant = _context.Restaurants!.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
@@ -70,9 +66,7 @@ namespace QRmenuAPI.Controllers
                     return Unauthorized();
                 }
             }
-            
             _context.Entry(category).State = EntityState.Modified;
-
             try
             {
                  _context.SaveChangesAsync().Wait();
@@ -88,7 +82,6 @@ namespace QRmenuAPI.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
@@ -102,7 +95,6 @@ namespace QRmenuAPI.Controllers
             {
                 return Problem("Entity set 'ApplicationContext.Categories'  is null.");
             }
-
             Restaurant? restaurant = _context.Restaurants!.FindAsync(category.RestaurantId).Result;
             if(restaurant == null)
             {
@@ -117,7 +109,6 @@ namespace QRmenuAPI.Controllers
             }
             _context.Categories.Add(category);
             _context.SaveChangesAsync().Wait();
-
             return CreatedAtAction("GetCategory", new { id = category.Id }, category);
         }
 
@@ -130,9 +121,7 @@ namespace QRmenuAPI.Controllers
             {
                 return NotFound();
             }
-
             Category? category = _context.Categories!.Where(c => c.Id == id).FirstOrDefault();
-
             if (category != null)
             {
                 return Problem("Category not found");

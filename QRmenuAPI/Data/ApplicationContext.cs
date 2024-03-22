@@ -27,7 +27,7 @@ namespace QRmenuAPI.Data
             modelbuilder.Entity<Food>().HasOne(u => u.State).WithMany().OnDelete(DeleteBehavior.NoAction);
 			modelbuilder.Entity<RestaurantUser>().HasOne(r => r.Restaurant).WithMany().OnDelete(DeleteBehavior.NoAction);
             modelbuilder.Entity<RestaurantUser>().HasOne(r => r.ApplicationUser).WithMany().OnDelete(DeleteBehavior.NoAction);
-            modelbuilder.Entity<RestaurantUser>().HasKey(ru => new { ru.UserApplicationUserId, ru.RestaurantId });
+            modelbuilder.Entity<RestaurantUser>().HasKey(ru => new { ru.UserId, ru.RestaurantId });
 			base.OnModelCreating(modelbuilder);
         }
 
