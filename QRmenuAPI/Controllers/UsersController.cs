@@ -150,20 +150,6 @@ namespace QRmenuAPI.Controllers
             return Ok("Successfull");
         }
 
-        //public bool Activate(ApplicationUser user)
-        //{
-        //    try
-        //    {
-        //        user.StateId = 1;
-        //        _signInManager.UserManager.UpdateAsync(user);
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return false;
-        //    }
-        //    return true;
-        //}
-
         [Authorize(Roles = "Administrator")]
         [HttpPost("ForgetPassword")]
         public ActionResult<string> ForgetPassword(string userName, string NewPassword)
