@@ -35,15 +35,15 @@ namespace QRmenuAPI.Controllers
             return await _roleManager.Roles.ToListAsync();
         }
 
-        // POST: api/Roles
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [Authorize(Roles = "Administrator")]
-        [HttpPost("PostApplicationRole")]
-        public void PostApplicationRole(string name)
-        {
-            IdentityRole applicationRole = new IdentityRole(name);
-            _roleManager.CreateAsync(applicationRole).Wait();
-        }
+        //// POST: api/Roles
+        //// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        //[Authorize(Roles = "Administrator")]
+        //[HttpPost("PostApplicationRole")]
+        //public void PostApplicationRole(string name)
+        //{
+        //    IdentityRole applicationRole = new IdentityRole(name);
+        //    _roleManager.CreateAsync(applicationRole).Wait();
+        //}
 
         [HttpPost("AssignRestaurantAdminRole")]
         [Authorize(Roles = "Administrator,CompanyAdministrator")]

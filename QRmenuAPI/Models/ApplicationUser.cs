@@ -40,4 +40,3 @@ namespace QRmenuAPI.Models
         public Company? Company { get; set; }
     }
 }
-

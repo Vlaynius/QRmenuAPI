@@ -18,4 +18,3 @@ namespace QRmenuAPI.Models
 		public ApplicationUser? ApplicationUser { get; set; }
 	}
 }
-

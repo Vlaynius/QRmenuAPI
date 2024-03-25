@@ -2,9 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using QRmenuAPI.Models;
 using Microsoft.AspNetCore.Identity;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-
-
 namespace QRMenuAPI;
 
 public class Program
@@ -42,9 +39,8 @@ public class Program
         }
         app.UseAuthentication();
         app.UseAuthorization();
-
-
         app.MapControllers();
+
         {
             ApplicationContext? context = app.Services.CreateScope().ServiceProvider.GetService<ApplicationContext>();
             if (context != null)
@@ -90,7 +86,6 @@ public class Program
                         roleManager.CreateAsync(identityRole).Wait();
                         identityRole = new IdentityRole("RestaurantAdministrator");
                         roleManager.CreateAsync(identityRole).Wait();
-
                     }
                 }
                 UserManager<ApplicationUser>? userManager = app.Services.CreateScope().ServiceProvider.GetService<UserManager<ApplicationUser>>();

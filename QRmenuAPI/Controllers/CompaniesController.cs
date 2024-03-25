@@ -106,7 +106,6 @@ namespace QRmenuAPI.Controllers
             {
                 return NotFound();
             }
-            //Include(c => c.applicationUsers).Include(c => c.Restaurants)!.ThenInclude(c => c.Categories)
             Company? company = _context.Companies!.Where(c => c.Id == id).FirstOrDefault();
             List<ApplicationUser>? applicationUser = _userManager.Users.Where(u => u.CompanyId == company!.Id).ToList();
             List<Restaurant>? restaurants = _context.Restaurants!.Where(r => r.CompanyId == company!.Id).ToList();

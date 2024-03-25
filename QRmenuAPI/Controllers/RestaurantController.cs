@@ -146,5 +146,26 @@ namespace QRmenuAPI.Controllers
         {
             return (_context.Restaurants?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+
+
+        //[HttpGet("Menu")]
+        //public ActionResult Menu(int restaurantId)
+        //{
+          
+        //    Restaurant? restaurant = _context.Restaurants.Where(r => r.Id == restaurantId).Include(r=>r.).FirstOrDefault();
+        //    if(restaurant == null && restaurant.StateId != 1)
+        //    {
+        //        return NotFound();
+        //    }
+        //    List<Category> categories = _context.Categories.Where(c => c.RestaurantId == restaurantId).ToList();
+        //    foreach (Category cat in categories)
+        //    {
+        //        res.Add(cat);
+        //    }
+
+
+
+        //}
+
     }
 }
