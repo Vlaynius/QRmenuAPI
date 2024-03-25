@@ -18,7 +18,7 @@ namespace QRmenuAPI.Data
 		public DbSet<RestaurantUser>? RestaurantUsers { get; set; }
 		public DbSet<Category>? Categories { get; set; }
         public DbSet<Food>? Foods { get; set; }
-        
+
         protected override void OnModelCreating(ModelBuilder modelbuilder)
         {
 			modelbuilder.Entity<ApplicationUser>().HasOne(u => u.State).WithMany().OnDelete(DeleteBehavior.NoAction);

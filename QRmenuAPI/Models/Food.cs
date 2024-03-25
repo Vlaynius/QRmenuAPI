@@ -31,6 +31,6 @@ namespace QRmenuAPI.Models
         //[ForeignKey("CategoryId")]
         //public Category? Category { get; set; }
 
-        
+ 
     }
 }

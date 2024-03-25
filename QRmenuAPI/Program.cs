@@ -23,6 +23,7 @@ public class Program
         builder.Services.AddSwaggerGen();
         builder.Services.AddDbContext<ApplicationContext>(options =>
                options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDatabase")));
+        
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<ApplicationContext>().AddDefaultTokenProviders();
         builder.Services.AddAuthentication();
