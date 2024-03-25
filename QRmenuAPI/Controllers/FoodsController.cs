@@ -83,7 +83,7 @@ namespace QRmenuAPI.Controllers
                     throw;
                 }
             }
-            return NoContent();
+            return Ok("Done");
         }
 
         // POST: api/Foods
@@ -124,8 +124,8 @@ namespace QRmenuAPI.Controllers
                 return NotFound();
             }
             Food? food =  _context.Foods.Find(id);
-            Category? category = _context.Categories!.Where(c => c.Id == food!.CategoryId).FirstOrDefault();
-            Restaurant? restaurant = _context.Restaurants!.Where(r => r.Id == category!.RestaurantId).FirstOrDefault();
+            Category? category = _context.Categories!.Where(c => c.Id == food.CategoryId).FirstOrDefault();
+            Restaurant? restaurant = _context.Restaurants!.Where(r => r.Id == category.RestaurantId).FirstOrDefault();
             if (User.HasClaim("CompanyId", restaurant!.CompanyId.ToString()) == false)
             {
                 if (User.HasClaim("RestaurantId", category!.RestaurantId.ToString()) == false)
@@ -136,8 +136,9 @@ namespace QRmenuAPI.Controllers
             if ( food != null)
             {
                 food.StateId = 0;
+                _context.SaveChangesAsync().Wait();
             }
-            return NoContent();
+            return Ok("Done");
         }
 
         private bool FoodExists(int id)

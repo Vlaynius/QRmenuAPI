@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -145,15 +146,18 @@ namespace QRmenuAPI.Controllers
 
 
         [HttpGet("Menu")]
-        public IQueryable Menu(int restaurantId)
+        public ActionResult<Restaurant> Menu(int restaurantId)
         {
-
-            var restaurant = _context.Restaurants!.Where(r => r.Id == restaurantId).Include(c=>c.Categories).ThenInclude(f=>f.foods);
-            if (restaurant == null)
+            Restaurant? restaurant = _context.Restaurants!.Include(c=>c.Categories).ThenInclude(f=>f.foods).FirstOrDefault(r => r.Id == restaurantId);
+            if(restaurant == null)
             {
-                return null;
+                return NotFound();
             }
-            
+            restaurant.Categories = restaurant.Categories?.Where(c => c.StateId == 1).ToList();
+            foreach (var category in restaurant.Categories)
+            {
+                category.foods = category.foods?.Where(f => f.StateId == 1).ToList();
+            }
             return restaurant;
         }
     }
