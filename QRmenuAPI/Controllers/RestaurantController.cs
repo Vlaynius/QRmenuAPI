@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -148,24 +144,17 @@ namespace QRmenuAPI.Controllers
         }
 
 
-        //[HttpGet("Menu")]
-        //public ActionResult Menu(int restaurantId)
-        //{
-          
-        //    Restaurant? restaurant = _context.Restaurants.Where(r => r.Id == restaurantId).Include(r=>r.).FirstOrDefault();
-        //    if(restaurant == null && restaurant.StateId != 1)
-        //    {
-        //        return NotFound();
-        //    }
-        //    List<Category> categories = _context.Categories.Where(c => c.RestaurantId == restaurantId).ToList();
-        //    foreach (Category cat in categories)
-        //    {
-        //        res.Add(cat);
-        //    }
+        [HttpGet("Menu")]
+        public IQueryable Menu(int restaurantId)
+        {
 
-
-
-        //}
-
+            var restaurant = _context.Restaurants!.Where(r => r.Id == restaurantId).Include(c=>c.Categories).ThenInclude(f=>f.foods);
+            if (restaurant == null)
+            {
+                return null;
+            }
+            
+            return restaurant;
+        }
     }
 }

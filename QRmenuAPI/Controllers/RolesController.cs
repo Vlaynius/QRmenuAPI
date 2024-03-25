@@ -25,14 +25,23 @@ namespace QRmenuAPI.Controllers
 
         // GET: api/Roles
         [Authorize(Roles = "Administrator")]
-        [HttpGet("GetApplicationRole")]
-        public async Task<ActionResult<IEnumerable<IdentityRole>>> GetApplicationRole()
+        [HttpGet("GetApplicationRoles")]
+        public async Task<ActionResult<IEnumerable<IdentityRole>>> GetApplicationRoles()
         {
             if (_roleManager == null)
             {
                 return NotFound();
             }
             return await _roleManager.Roles.ToListAsync();
+        }
+
+        [Authorize]
+        [HttpGet("UserRoles")]
+        public IList<string> GetUserRoles()
+        {
+            ApplicationUser appUser = _signInManager.UserManager.GetUserAsync(User).Result;
+            IList<string> Roles = _signInManager.UserManager.GetRolesAsync(appUser).Result;
+            return Roles;
         }
 
         //// POST: api/Roles

@@ -28,9 +28,9 @@ namespace QRmenuAPI.Models
 
 
         public int CategoryId { get; set; }
-        [ForeignKey("CategoryId")]
-        public Category? Category { get; set; }
+        //[ForeignKey("CategoryId")]
+        //public Category? Category { get; set; }
 
-
+        
     }
 }

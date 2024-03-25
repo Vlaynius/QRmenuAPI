@@ -134,6 +134,7 @@ namespace QRmenuAPI.Controllers
                     return Unauthorized();
                 }
             }
+
             category.StateId = 0;
             List<Food> foods = _context.Foods!.Where(f => f.CategoryId == category.Id).ToList();
             if (foods != null)

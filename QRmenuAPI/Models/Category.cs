@@ -19,11 +19,12 @@ namespace QRmenuAPI.Models
 
         public int RestaurantId { get; set; }
 
-        [ForeignKey("RestaurantId")]
-        public Restaurant? Restaurant { get; set; }
+        //[ForeignKey("RestaurantId")]
+        //public Restaurant? Restaurant { get; set; }
 
         [ForeignKey("StateId")]
         public State? State { get; set; }
 
+        public List<Food> foods { get; set; }
     }
 }

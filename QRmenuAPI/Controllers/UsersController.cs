@@ -49,7 +49,29 @@ namespace QRmenuAPI.Controllers
             return applicationUser;
         }
 
-        [HttpPut("PutApplicationUser")]
+        [HttpGet("UserInfo")]
+        [Authorize]
+        public async Task<ActionResult<ApplicationUser>> UserId()
+        {
+            ApplicationUser appUser = await _signInManager.UserManager.GetUserAsync(User);
+           
+            return appUser;
+        }
+
+        [HttpGet("UserId")]
+        [Authorize(Roles = "Administrator")]
+        public async Task<ActionResult<ApplicationUser>> UserId(string userName)
+        {
+            ApplicationUser appUser = await _signInManager.UserManager.GetUserAsync(User);
+            var applicationUser = await _signInManager.UserManager.FindByNameAsync(userName);
+            if (applicationUser == null)
+            {
+                return NotFound();
+            }
+            return applicationUser;
+        }
+
+        [HttpPut]
         [Authorize(Roles = "Administrator, CompanyAdministrator")]
         public ActionResult<string> PutApplicationUser(ApplicationUser applicationUser)
         {
@@ -80,7 +102,7 @@ namespace QRmenuAPI.Controllers
         }
 
         [Authorize(Roles = "CompanyAdministrator")]
-        [HttpPost("PostApplicationUser")]
+        [HttpPost]
         public string PostApplicationUser(ApplicationUser applicationUser, string passWord)
         {
             _signInManager.UserManager.CreateAsync(applicationUser, passWord).Wait();
@@ -88,7 +110,7 @@ namespace QRmenuAPI.Controllers
         }
 
         [Authorize(Roles = "Administrator,CompanyAdministrator")]
-        [HttpDelete("DeleteApplicationUser")]
+        [HttpDelete]
         public ActionResult<string> DeleteApplicationUser(string id)
         {
             bool isAdmin = false;
@@ -131,14 +153,15 @@ namespace QRmenuAPI.Controllers
             {
                 return Problem(); //Kullanıcı 
             }
-            Microsoft.AspNetCore.Identity.SignInResult signInResult = _signInManager.PasswordSignInAsync(user, password, false, false).Result;
-            bool sonuc = signInResult.Succeeded;
-            if(sonuc != true)
-            {
-                return Problem("Invalid UserName or Password");
-            }
+            
             try
             {
+                Microsoft.AspNetCore.Identity.SignInResult signInResult = _signInManager.PasswordSignInAsync(user, password, false, false).Result;
+                bool sonuc = signInResult.Succeeded;
+                if (sonuc != true || user.StateId == 0)
+                {
+                    return Problem("Invalid UserName or Password");
+                }
                 user.StateId = 1;
                 _signInManager.UserManager.UpdateAsync(user);
             }
@@ -149,20 +172,6 @@ namespace QRmenuAPI.Controllers
             
             return Ok("Successfull");
         }
-
-        //public bool Activate(ApplicationUser user)
-        //{
-        //    try
-        //    {
-        //        user.StateId = 1;
-        //        _signInManager.UserManager.UpdateAsync(user);
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return false;
-        //    }
-        //    return true;
-        //}
 
         [Authorize(Roles = "Administrator")]
         [HttpPost("ForgetPassword")]
